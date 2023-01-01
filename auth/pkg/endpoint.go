@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/go-kit/kit/endpoint"
 )
@@ -27,7 +28,11 @@ func makeLoginEndpoint(svc Service) endpoint.Endpoint {
 		credentials := r.(Credentials)
 		token, err := svc.Login(credentials.User, credentials.Pass)
 
-		return LoginResponse{token, err}, nil
+		var error string
+		if err != nil {
+			error = err.Error()
+		}
+		return LoginResponse{token, error}, nil
 	}
 }
 
@@ -37,10 +42,13 @@ type Credentials struct {
 }
 
 type LoginResponse struct {
-	Token string `json:"token"`
-	Err   error  `json:"-"`
+	Token string `json:"token,omitempty"`
+	Err   string `json:"err,omitempty"`
 }
 
-func (r LoginResponse) Failed() error {
-	return r.Err
+func (r LoginResponse) StatusCode() int {
+	if r.Err != "" {
+		return http.StatusBadRequest
+	}
+	return http.StatusOK
 }
