@@ -23,7 +23,8 @@ message Token {
 
 message LoginReply {
     string token = 1;
-    string err = 2;
+    string refreshToken = 2;
+    string err = 3;
 }
 
 message VerifyReply {

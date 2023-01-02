@@ -25,14 +25,15 @@ func (r VerifyResponse) Failed() error {
 
 func makeLoginEndpoint(svc Service) endpoint.Endpoint {
 	return func(ctx context.Context, r any) (any, error) {
-		credentials := r.(Credentials)
-		token, err := svc.Login(credentials.User, credentials.Pass)
+		cred := r.(Credentials)
+		token, refreshToken, err := svc.Login(cred.User, cred.Pass)
 
 		var error string
 		if err != nil {
 			error = err.Error()
 		}
-		return LoginResponse{token, error}, nil
+
+		return LoginResponse{token, refreshToken, error}, nil
 	}
 }
 
@@ -42,8 +43,9 @@ type Credentials struct {
 }
 
 type LoginResponse struct {
-	Token string `json:"token,omitempty"`
-	Err   string `json:"err,omitempty"`
+	Token   string `json:"token,omitempty"`
+	Refresh string `json:"refresh_token,omitempty"`
+	Err     string `json:"err,omitempty"`
 }
 
 func (r LoginResponse) StatusCode() int {
