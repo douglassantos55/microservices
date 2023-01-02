@@ -28,16 +28,15 @@ func makeLoginEndpoint(svc Service) endpoint.Endpoint {
 		cred := r.(Credentials)
 		response, err := svc.Login(cred.User, cred.Pass)
 
-		var error string
 		if err != nil {
-			error = err.Error()
+			return LoginResponse{Err: err.Error()}, nil
 		}
 
 		return LoginResponse{
 			User:    response.User,
 			Token:   response.Token,
 			Refresh: response.Refresh,
-			Err:     error,
+			Err:     "",
 		}, nil
 	}
 }
