@@ -46,12 +46,22 @@ func (s *service) Login(username, pass string) (*AuthResponse, error) {
 
 	user := &User{ID: "aK0o3", Name: "John Doe"}
 
-	token, err := s.getToken(user)
+	token, err := s.tokenGen.Sign(
+		user,
+		time.Now().Add(time.Hour),
+		os.Getenv(JWT_SIGN_SECRET_ENV),
+	)
+
 	if err != nil {
 		return nil, err
 	}
 
-	refreshToken, err := s.getRefreshToken(user)
+	refreshToken, err := s.tokenGen.Sign(
+		user,
+		time.Now().AddDate(1, 0, 0),
+		os.Getenv(JWT_REFRESH_SECRET_ENV),
+	)
+
 	if err != nil {
 		return nil, err
 	}
