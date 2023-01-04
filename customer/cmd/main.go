@@ -2,11 +2,13 @@ package main
 
 import (
 	"net/http"
+	"os"
 
-	"api.example.com/customer/pkg"
+	"reconcip.com.br/microservices/customer/pkg"
 )
 
 func main() {
 	svc := pkg.NewService(pkg.NewValidator())
-	http.ListenAndServe(":80", pkg.MakeHTTPHandler(svc))
+	httpHandler := pkg.MakeHTTPHandler(svc, os.Getenv("AUTH_SERVICE_URL"))
+	http.ListenAndServe(":80", httpHandler)
 }

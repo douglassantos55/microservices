@@ -5,14 +5,18 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/go-kit/kit/auth/jwt"
 	httptransport "github.com/go-kit/kit/transport/http"
 )
 
-func MakeHTTPHandler(svc Service) http.Handler {
+func MakeHTTPHandler(svc Service, authService string) http.Handler {
+	verify := verifyMiddleware(authService)
+
 	return httptransport.NewServer(
-		makeCreateEndpoint(svc),
+		verify(makeCreateEndpoint(svc)),
 		decodeCreateRequest,
 		httptransport.EncodeJSONResponse,
+		httptransport.ServerBefore(jwt.HTTPToContext()),
 	)
 }
 

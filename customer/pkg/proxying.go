@@ -2,51 +2,46 @@ package pkg
 
 import (
 	"context"
-	"errors"
-	"time"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"net/url"
 
-	"api.example.com/microservices.git/auth/proto"
 	"github.com/go-kit/kit/auth/jwt"
 	"github.com/go-kit/kit/endpoint"
-	grpctransport "github.com/go-kit/kit/transport/grpc"
-	"google.golang.org/grpc"
+	httptransport "github.com/go-kit/kit/transport/http"
 )
 
 func makeVerifyEndpoint(authService string) endpoint.Endpoint {
-	conn, err := grpc.Dial(
-		authService,
-		grpc.WithInsecure(),
-		grpc.WithTimeout(5*time.Second),
-	)
-
+	verifyUrl, err := url.Parse("http://" + authService + "/verify")
 	if err != nil {
 		panic(err)
 	}
 
-	return grpctransport.NewClient(
-		conn,
-		"pb.Auth",
-		"Verify",
+	return httptransport.NewClient(
+		"GET",
+		verifyUrl,
 		encodeVerifyRequest,
 		decodeVerifyResponse,
-		&proto.VerifyReply{},
 	).Endpoint()
 }
 
-func encodeVerifyRequest(ctx context.Context, r any) (any, error) {
-	token := ctx.Value(jwt.JWTContextKey).(string)
-	return &proto.Token{Token: token}, nil
-}
-
-func decodeVerifyResponse(ctx context.Context, r any) (any, error) {
-	res := r.(*proto.VerifyReply)
-	if res.GetErr() != "" {
-		return nil, errors.New(res.GetErr())
+func encodeVerifyRequest(ctx context.Context, req *http.Request, data any) error {
+	token, ok := ctx.Value(jwt.JWTContextKey).(string)
+	if !ok {
+		return jwt.ErrTokenContextMissing
 	}
-	return VerifyResponse{res.User.String(), res.Err}, nil
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
+	return nil
 }
 
-type VerifyResponse struct {
-	User string `json:"user"`
-	Err  string `json:"err,omitempty"`
+func decodeVerifyResponse(ctx context.Context, r *http.Response) (any, error) {
+	var user struct {
+		ID   string `json:"id"`
+		Name string `json:"name"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+		return nil, err
+	}
+	return user, nil
 }

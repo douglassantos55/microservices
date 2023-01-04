@@ -20,6 +20,9 @@ spec:
         imagePullPolicy: Never
         ports:
         - containerPort: 80
+        env:
+        - name: AUTH_SERVICE_URL
+          value: auth-service
 ---
 apiVersion: v1
 kind: Service
