@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	"api.example.com/auth/pkg"
+	"reconcip.com.br/microservices/auth/pkg"
 )
 
 func main() {

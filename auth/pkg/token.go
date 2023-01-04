@@ -25,10 +25,10 @@ type Token interface {
 }
 
 type TokenGenerator interface {
-	// Generates a token with claims
+	// Generates a token
 	Sign(user *User, exp time.Time, secret string) (string, error)
 
-	// Validates token and returns claims
+	// Validates token
 	Verify(token, secret string) (Token, error)
 }
 
@@ -63,7 +63,6 @@ func (t *jwtGenerator) Sign(user *User, exp time.Time, secret string) (string, e
 		"iss":  "auth",
 		"user": user,
 	})
-
 	return token.SignedString([]byte(secret))
 }
 

@@ -2,25 +2,19 @@ package pkg
 
 import (
 	"context"
-	"net/http"
 
+	"github.com/go-kit/kit/auth/jwt"
 	"github.com/go-kit/kit/endpoint"
 )
 
 func makeVerifyEndpoint(svc Service) endpoint.Endpoint {
-	return func(ctx context.Context, token any) (any, error) {
-		user, err := svc.Verify(token.(string))
-		return VerifyResponse{user, err}, nil
+	return func(ctx context.Context, r any) (any, error) {
+		token, ok := ctx.Value(jwt.JWTContextKey).(string)
+		if !ok {
+			return nil, ErrInvalidToken
+		}
+		return svc.Verify(token)
 	}
-}
-
-type VerifyResponse struct {
-	User *User `json:"user"`
-	Err  error `json:"-"`
-}
-
-func (r VerifyResponse) Failed() error {
-	return r.Err
 }
 
 func makeLoginEndpoint(svc Service) endpoint.Endpoint {
@@ -29,14 +23,13 @@ func makeLoginEndpoint(svc Service) endpoint.Endpoint {
 		response, err := svc.Login(cred.User, cred.Pass)
 
 		if err != nil {
-			return LoginResponse{Err: err.Error()}, nil
+			return nil, err
 		}
 
 		return LoginResponse{
 			User:    response.User,
 			Token:   response.Token,
 			Refresh: response.Refresh,
-			Err:     "",
 		}, nil
 	}
 }
@@ -50,12 +43,4 @@ type LoginResponse struct {
 	User    *User  `json:"user,omitempty"`
 	Token   string `json:"token,omitempty"`
 	Refresh string `json:"refresh_token,omitempty"`
-	Err     string `json:"err,omitempty"`
-}
-
-func (r LoginResponse) StatusCode() int {
-	if r.Err != "" {
-		return http.StatusBadRequest
-	}
-	return http.StatusOK
 }

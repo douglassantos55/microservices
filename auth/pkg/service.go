@@ -3,7 +3,6 @@ package pkg
 import (
 	"errors"
 	"os"
-	"reflect"
 	"time"
 )
 
@@ -69,28 +68,15 @@ func (s *service) Login(username, pass string) (*AuthResponse, error) {
 	return &AuthResponse{user, token, refreshToken}, nil
 }
 
-func (s *service) Verify(token string) (*User, error) {
-	if token != "arandomtokenhere" {
+func (s *service) Verify(tokenStr string) (*User, error) {
+	token, err := s.tokenGen.Verify(tokenStr, os.Getenv(JWT_SIGN_SECRET_ENV))
+	if err != nil {
+		return nil, err
+	}
+
+	if !token.IsValid() {
 		return nil, ErrInvalidToken
 	}
-	return &User{ID: "aK0o3", Name: "John Doe"}, nil
-func (s *service) getToken(payload Payload) (string, error) {
-func (s *service) getToken(user *User) (string, error) {
-	payload := s.getPayload(user, time.Now().Add(time.Hour))
-	return s.tokenGen.Sign(payload, os.Getenv(JWT_SIGN_SECRET_ENV))
-}
 
-func (s *service) getRefreshToken(user *User) (string, error) {
-	payload := s.getPayload(user, time.Now().AddDate(1, 0, 0))
-	return s.tokenGen.Sign(payload, os.Getenv(JWT_REFRESH_SECRET_ENV))
-}
-
-func (s *service) getPayload(user *User, exp time.Time) Payload {
-	return Payload{
-		"iss":  "auth",
-		"exp":  exp,
-		"sub":  "admin",
-		"aud":  "renting",
-		"user": user,
-	}
+	return token.GetUser(), nil
 }
