@@ -4,16 +4,16 @@ import (
 	"github.com/go-kit/log"
 )
 
-type logging struct {
+type loggingService struct {
 	next   Service
 	logger log.Logger
 }
 
-func LoggingMiddleware(svc Service, logger log.Logger) Service {
-	return &logging{svc, logger}
+func NewLoggingService(svc Service, logger log.Logger) Service {
+	return &loggingService{svc, logger}
 }
 
-func (l *logging) Login(user string, pass string) (res *AuthResponse, err error) {
+func (l *loggingService) Login(user string, pass string) (res *AuthResponse, err error) {
 	defer func() {
 		l.logger.Log(
 			"method", "Login",
@@ -26,7 +26,7 @@ func (l *logging) Login(user string, pass string) (res *AuthResponse, err error)
 	return l.next.Login(user, pass)
 }
 
-func (l *logging) Verify(token string) (user *User, err error) {
+func (l *loggingService) Verify(token string) (user *User, err error) {
 	defer func() {
 		l.logger.Log(
 			"method", "Verify",

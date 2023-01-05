@@ -14,7 +14,7 @@ func main() {
 	logger = log.WithPrefix(logger, "caller", log.DefaultCaller)
 
 	svc := pkg.NewService(pkg.NewTokenGenerator())
-	svc = pkg.LoggingMiddleware(svc, logger)
+	svc = pkg.NewLoggingService(svc, logger)
 
 	http.ListenAndServe(":80", pkg.NewHTTPHandler(svc))
 }
