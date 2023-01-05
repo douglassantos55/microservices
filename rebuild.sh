@@ -13,6 +13,9 @@ rebuild_service()
     minikube image build ./$SERVICE -t $SERVICE
     minikube kubectl -- apply -f $SERVICE.yml
 
+    # clean up so that it doesn't pile up and fills the disk
+    minikube ssh -- docker system prune --volumes -f
+
     return 0
 }
 
