@@ -3,7 +3,6 @@ package pkg
 import (
 	"encoding/json"
 	"io"
-	"net/http"
 )
 
 type Error struct {
