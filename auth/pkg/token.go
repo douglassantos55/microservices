@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -37,8 +38,20 @@ func (t *jwtToken) IsValid() bool {
 
 // Returns token payload
 func (t *jwtToken) GetUser() *User {
+	var user *User
+
 	claims := t.token.Claims.(jwt.MapClaims)
-	return claims["user"].(*User)
+	bytes, err := json.Marshal(claims["user"])
+
+	if err != nil {
+		return nil
+	}
+
+	if err := json.Unmarshal(bytes, &user); err != nil {
+		return nil
+	}
+
+	return user
 }
 
 type jwtGenerator struct{}
