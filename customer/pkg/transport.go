@@ -23,17 +23,11 @@ func MakeHTTPHandler(svc Service, authService string) http.Handler {
 func decodeCreateRequest(ctx context.Context, r *http.Request) (any, error) {
 	var data Customer
 	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
-		return nil, ErrBadRequest{}
+		return nil, NewError(
+			http.StatusBadRequest,
+			"invalid input data",
+			"the provided input is invalid, please verify and try again",
+		)
 	}
 	return data, nil
-}
-
-type ErrBadRequest struct{}
-
-func (e ErrBadRequest) Error() string {
-	return "invalid request"
-}
-
-func (e ErrBadRequest) StatusCode() int {
-	return http.StatusBadRequest
 }

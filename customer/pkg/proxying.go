@@ -43,19 +43,32 @@ func makeVerifyEndpoint(authService string) endpoint.Endpoint {
 func encodeVerifyRequest(ctx context.Context, req *http.Request, data any) error {
 	token, ok := ctx.Value(jwt.JWTContextKey).(string)
 	if !ok {
-		return jwt.ErrTokenContextMissing
+		return NewError(
+			http.StatusBadRequest,
+			"empty authorization token",
+			"could not find token in authorization header",
+		)
 	}
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
 	return nil
 }
 
 func decodeVerifyResponse(ctx context.Context, r *http.Response) (any, error) {
+	if r.StatusCode != http.StatusOK {
+		return nil, NewErrorFromResponse(r.Body)
+	}
+
 	var user struct {
 		ID   string `json:"id"`
 		Name string `json:"name"`
 	}
+
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		return nil, err
+		return nil, NewError(
+			http.StatusBadGateway,
+			"unexpected response",
+			"could not parse unexpected response",
+		)
 	}
 	return user, nil
 }
