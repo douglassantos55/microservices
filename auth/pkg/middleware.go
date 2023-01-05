@@ -32,8 +32,7 @@ func (l *loggingService) Verify(token string) (user *User, err error) {
 			"method", "Verify",
 			"token", token,
 			"user", user,
-			"err", err.Error(),
-			"user_error", err,
+			"err", err,
 		)
 	}()
 	return l.next.Verify(token)
