@@ -1,21 +1,24 @@
 package pkg
 
-import (
-	"context"
+import "github.com/go-kit/kit/log"
 
-	"github.com/go-kit/kit/endpoint"
-)
+type logging struct {
+	next   Service
+	logger log.Logger
+}
 
-func verifyMiddleware(service string) endpoint.Middleware {
-	verify := makeVerifyEndpoint(service)
+func LoggingMiddleware(svc Service, logger log.Logger) Service {
+	return &logging{svc, logger}
+}
 
-	return func(next endpoint.Endpoint) endpoint.Endpoint {
-		return func(ctx context.Context, r any) (any, error) {
-			_, err := verify(ctx, r)
-			if err != nil {
-				return nil, err
-			}
-			return next(ctx, r)
-		}
-	}
+func (l *logging) Create(data Customer) (customer *Customer, err error) {
+	defer func() {
+		l.logger.Log(
+			"method", "Create",
+			"input", data,
+			"output", customer,
+			"err", err,
+		)
+	}()
+	return l.next.Create(data)
 }
