@@ -3,17 +3,17 @@ package pkg
 import "time"
 
 type Customer struct {
-	ID           string     `json:"id,omitempty"`
-	Name         string     `json:"name" validate:"required"`
-	Email        string     `json:"email" validate:"omitempty,email"`
-	Birthdate    *time.Time `json:"birthdate"`
-	CpfCnpj      string     `json:"cpf_cnpj" validate:"required"`
-	RgInscEst    string     `json:"rg_insc_est"`
-	Phone        string     `json:"phone"`
-	Cellphone    string     `json:"cellphone"`
-	Ocupation    string     `json:"ocupation"`
-	Address      Address    `json:"address" validate:"required"`
-	Observations string     `json:"observations"`
+	ID           string    `json:"id,omitempty"`
+	Name         string    `json:"name" validate:"required"`
+	Email        string    `json:"email" validate:"omitempty,email"`
+	Birthdate    time.Time `json:"birthdate" validate:"omitempty"`
+	CpfCnpj      string    `json:"cpf_cnpj" validate:"required"`
+	RgInscEst    string    `json:"rg_insc_est"`
+	Phone        string    `json:"phone"`
+	Cellphone    string    `json:"cellphone"`
+	Ocupation    string    `json:"ocupation"`
+	Address      Address   `json:"address" validate:"required"`
+	Observations string    `json:"observations"`
 }
 
 type Address struct {
