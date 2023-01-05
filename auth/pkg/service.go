@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"errors"
+	"net/http"
 	"os"
 	"time"
 )
@@ -45,7 +46,11 @@ func NewService(tg TokenGenerator) Service {
 
 func (s *service) Login(username, pass string) (*AuthResponse, error) {
 	if username != "admin" || pass != "123" {
-		return nil, ErrInvalidCredentials
+		return nil, NewError(
+			http.StatusUnprocessableEntity,
+			"invalid credentials",
+			"could not find user for supplied credentials",
+		)
 	}
 
 	user := &User{ID: "aK0o3", Name: "John Doe"}
@@ -57,7 +62,11 @@ func (s *service) Login(username, pass string) (*AuthResponse, error) {
 	)
 
 	if err != nil {
-		return nil, err
+		return nil, NewError(
+			http.StatusInternalServerError,
+			"could not generate token",
+			"something went wrong while generating token, please try again",
+		)
 	}
 
 	refreshToken, err := s.tokenGen.Sign(
@@ -67,7 +76,11 @@ func (s *service) Login(username, pass string) (*AuthResponse, error) {
 	)
 
 	if err != nil {
-		return nil, err
+		return nil, NewError(
+			http.StatusInternalServerError,
+			"could not generate token",
+			"something went wrong while generating token, please try again",
+		)
 	}
 
 	return &AuthResponse{user, token, refreshToken}, nil
@@ -76,11 +89,19 @@ func (s *service) Login(username, pass string) (*AuthResponse, error) {
 func (s *service) Verify(tokenStr string) (*User, error) {
 	token, err := s.tokenGen.Verify(tokenStr, os.Getenv(JWT_SIGN_SECRET_ENV))
 	if err != nil {
-		return nil, err
+		return nil, NewError(
+			http.StatusUnauthorized,
+			"invalid or expired token",
+			"the provided token is either invalid or has expired",
+		)
 	}
 
 	if !token.IsValid() {
-		return nil, ErrInvalidToken
+		return nil, NewError(
+			http.StatusUnauthorized,
+			"invalid token",
+			"the provided token is invalid",
+		)
 	}
 
 	return token.GetUser(), nil

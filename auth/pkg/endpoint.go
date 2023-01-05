@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/go-kit/kit/auth/jwt"
 	"github.com/go-kit/kit/endpoint"
@@ -11,7 +12,11 @@ func makeVerifyEndpoint(svc Service) endpoint.Endpoint {
 	return func(ctx context.Context, r any) (any, error) {
 		token, ok := ctx.Value(jwt.JWTContextKey).(string)
 		if !ok {
-			return nil, ErrInvalidToken
+			return nil, NewError(
+				http.StatusBadRequest,
+				"Empty authorization token",
+				"could not find token in authorization header",
+			)
 		}
 		return svc.Verify(token)
 	}

@@ -32,7 +32,11 @@ func NewHTTPHandler(svc Service) http.Handler {
 func decodeLoginRequest(ctx context.Context, r *http.Request) (any, error) {
 	var credentials Credentials
 	if err := json.NewDecoder(r.Body).Decode(&credentials); err != nil {
-		return nil, err
+		return nil, NewError(
+			http.StatusBadRequest,
+			"invalid input data",
+			"the provided input is invalid, please verify and try again",
+		)
 	}
 	return credentials, nil
 }
