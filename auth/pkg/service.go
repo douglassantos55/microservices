@@ -6,6 +6,11 @@ import (
 	"time"
 )
 
+const (
+	JWT_SIGN_SECRET_ENV    = "JWT_SIGN_SECRET"
+	JWT_REFRESH_SECRET_ENV = "JWT_REFRESH_SECRET"
+)
+
 var (
 	ErrInvalidToken       = errors.New("invalid token")
 	ErrInvalidCredentials = errors.New("invalid credentials")

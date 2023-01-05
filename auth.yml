@@ -20,6 +20,11 @@ spec:
         imagePullPolicy: Never
         ports:
         - containerPort: 80
+        env:
+        - name: JWT_SIGN_SECRET
+          value: jwt-sign-secret
+        - name: JWT_REFRESH_SECRET
+          value: jwt-refresh-secret
 ---
 apiVersion: v1
 kind: Service

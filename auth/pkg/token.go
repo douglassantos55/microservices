@@ -6,15 +6,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-const (
-	JWT_SIGN_SECRET_ENV    = "JWT_SIGN_SECRET"
-	JWT_REFRESH_SECRET_ENV = "JWT_REFRESH_SECRET"
-)
-
 var ErrTokenExpired = jwt.ErrTokenExpired
-
-// Token payload
-type Payload map[string]any
 
 type Token interface {
 	// Validates token
