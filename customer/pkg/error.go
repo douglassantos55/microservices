@@ -26,14 +26,6 @@ func (e Error) StatusCode() int {
 	return e.Status
 }
 
-func (e Error) Headers() http.Header {
-	return http.Header{
-		"Content-Type": []string{
-			"application/problem+json",
-		},
-	}
-}
-
 func (e Error) Error() string {
 	return e.Title
 }

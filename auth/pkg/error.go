@@ -1,9 +1,6 @@
 package pkg
 
-import (
-	"encoding/json"
-	"net/http"
-)
+import "encoding/json"
 
 type Error struct {
 	Status  int    `json:"status"`
@@ -17,14 +14,6 @@ func NewError(status int, title, message string) Error {
 
 func (e Error) StatusCode() int {
 	return e.Status
-}
-
-func (e Error) Headers() http.Header {
-	return http.Header{
-		"Content-Type": []string{
-			"application/problem+json",
-		},
-	}
 }
 
 func (e Error) Error() string {
