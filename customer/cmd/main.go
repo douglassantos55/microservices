@@ -13,7 +13,17 @@ func main() {
 	logger = log.WithPrefix(logger, "ts", log.DefaultTimestamp)
 	logger = log.WithPrefix(logger, "caller", log.DefaultCaller)
 
-	svc := pkg.NewService(pkg.NewValidator())
+	repository, err := pkg.NewMongoRepository(
+		os.Getenv("MONGODB_URL"),
+		os.Getenv("MONGODB_USER"),
+		os.Getenv("MONGODB_PASSWORD"),
+	)
+
+	if err != nil {
+		panic(err)
+	}
+
+	svc := pkg.NewService(pkg.NewValidator(), repository)
 	svc = pkg.LoggingMiddleware(svc, logger)
 
 	httpHandler := pkg.MakeHTTPHandler(svc, os.Getenv("AUTH_SERVICE_URL"))

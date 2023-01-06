@@ -23,6 +23,12 @@ spec:
         env:
         - name: AUTH_SERVICE_URL
           value: auth-service
+        - name: MONGODB_URL
+          value: mongodb-service
+        - name: MONGODB_USER
+          value: root
+        - name: MONGODB_PASSWORD
+          value: "123"
 ---
 apiVersion: v1
 kind: Service
