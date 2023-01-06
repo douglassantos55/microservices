@@ -32,5 +32,6 @@ require (
 	github.com/go-kit/log v0.2.0 // indirect
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
 	github.com/go-playground/validator/v10 v10.11.1
+	github.com/julienschmidt/httprouter v1.3.0
 	go.mongodb.org/mongo-driver v1.11.1
 )

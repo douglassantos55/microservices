@@ -11,6 +11,7 @@ import (
 )
 
 type Repository interface {
+	List(curPage, perPage int64) ([]*Customer, error)
 	Create(Customer) (*Customer, error)
 }
 
@@ -25,6 +26,27 @@ func NewMongoRepository(mongoUrl string, user, pass string) (Repository, error) 
 		return nil, err
 	}
 	return &mongoRepository{client}, nil
+}
+
+func (r *mongoRepository) List(curPage, perPage int64) ([]*Customer, error) {
+	collection := r.client.Database("customer").Collection("customers")
+
+	opts := options.Find()
+	opts.SetLimit(perPage)
+	opts.SetSkip(curPage * perPage)
+
+	cursor, err := collection.Find(context.Background(), bson.D{}, opts)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var customers []*Customer
+	if err := cursor.All(context.Background(), &customers); err != nil {
+		return nil, err
+	}
+
+	return customers, nil
 }
 
 func (r *mongoRepository) Create(data Customer) (*Customer, error) {

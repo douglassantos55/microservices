@@ -31,6 +31,7 @@ type Address struct {
 }
 
 type Service interface {
+	List(page, perPage int64) ([]*Customer, error)
 	Create(Customer) (*Customer, error)
 }
 
@@ -41,6 +42,10 @@ type service struct {
 
 func NewService(validator Validator, repository Repository) Service {
 	return &service{validator, repository}
+}
+
+func (s *service) List(page, perPage int64) ([]*Customer, error) {
+	return s.repository.List(page, perPage)
 }
 
 func (s *service) Create(customer Customer) (*Customer, error) {

@@ -4,20 +4,35 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/go-kit/kit/auth/jwt"
 	httptransport "github.com/go-kit/kit/transport/http"
+	"github.com/julienschmidt/httprouter"
 )
 
 func MakeHTTPHandler(svc Service, authService string) http.Handler {
+	router := httprouter.New()
 	verify := verifyMiddleware(authService)
+	opts := []httptransport.ServerOption{
+		httptransport.ServerBefore(jwt.HTTPToContext()),
+	}
 
-	return httptransport.NewServer(
+	router.Handler(http.MethodPost, "/", httptransport.NewServer(
 		verify(makeCreateEndpoint(svc)),
 		decodeCreateRequest,
 		httptransport.EncodeJSONResponse,
-		httptransport.ServerBefore(jwt.HTTPToContext()),
-	)
+		opts...,
+	))
+
+	router.Handler(http.MethodGet, "/", httptransport.NewServer(
+		verify(makeListEndpoint(svc)),
+		decodeListRequest,
+		httptransport.EncodeJSONResponse,
+		opts...,
+	))
+
+	return router
 }
 
 func decodeCreateRequest(ctx context.Context, r *http.Request) (any, error) {
@@ -30,4 +45,24 @@ func decodeCreateRequest(ctx context.Context, r *http.Request) (any, error) {
 		)
 	}
 	return data, nil
+}
+
+func decodeListRequest(ctx context.Context, r *http.Request) (any, error) {
+	params := r.URL.Query()
+	page, err := strconv.ParseInt(params.Get("page"), 0, 0)
+	if err != nil {
+		page = 0
+	}
+
+	perPage, err := strconv.ParseInt(params.Get("per_page"), 0, 0)
+	if err != nil {
+		perPage = 50
+	}
+
+	return Pagination{page, perPage}, nil
+}
+
+type Pagination struct {
+	Page    int64
+	PerPage int64
 }
