@@ -11,13 +11,13 @@ func NewLoggingService(svc Service, logger log.Logger) Service {
 	return &loggingService{svc, logger}
 }
 
-func (l *loggingService) List(page, perPage int64) (customers []*Customer, err error) {
+func (l *loggingService) List(page, perPage int64) (result *ListResult, err error) {
 	defer func() {
 		l.logger.Log(
 			"method", "List",
 			"page", page,
 			"perPage", perPage,
-			"output", customers,
+			"result", result,
 			"err", err,
 		)
 	}()

@@ -50,8 +50,8 @@ func decodeCreateRequest(ctx context.Context, r *http.Request) (any, error) {
 func decodeListRequest(ctx context.Context, r *http.Request) (any, error) {
 	params := r.URL.Query()
 	page, err := strconv.ParseInt(params.Get("page"), 0, 0)
-	if err != nil {
-		page = 0
+	if err != nil || page <= 0 {
+		page = 1
 	}
 
 	perPage, err := strconv.ParseInt(params.Get("per_page"), 0, 0)
@@ -59,7 +59,7 @@ func decodeListRequest(ctx context.Context, r *http.Request) (any, error) {
 		perPage = 50
 	}
 
-	return Pagination{page, perPage}, nil
+	return Pagination{Page: page - 1, PerPage: perPage}, nil
 }
 
 type Pagination struct {

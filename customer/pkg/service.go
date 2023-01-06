@@ -1,6 +1,8 @@
 package pkg
 
 import (
+	"math"
+	"net/http"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -30,8 +32,14 @@ type Address struct {
 	Postcode     string `bson:"postcode" json:"postcode"`
 }
 
+type ListResult struct {
+	Items      []any `json:"items"`
+	TotalItems int64 `json:"total_items"`
+	TotalPages int64 `json:"total_pages"`
+}
+
 type Service interface {
-	List(page, perPage int64) ([]*Customer, error)
+	List(page, perPage int64) (*ListResult, error)
 	Create(Customer) (*Customer, error)
 }
 
@@ -44,8 +52,35 @@ func NewService(validator Validator, repository Repository) Service {
 	return &service{validator, repository}
 }
 
-func (s *service) List(page, perPage int64) ([]*Customer, error) {
-	return s.repository.List(page, perPage)
+func (s *service) List(page, perPage int64) (*ListResult, error) {
+	customers, total, err := s.repository.List(page, perPage)
+	if err != nil {
+		return nil, NewError(
+			http.StatusInternalServerError,
+			"error fetching customers",
+			"something went wrong while fetching customers",
+		)
+	}
+
+	totalPages := int64(math.Max(1, float64(total/perPage)))
+	if page >= totalPages {
+		return nil, NewError(
+			http.StatusBadRequest,
+			"invalid page",
+			"page exceeds the maximum number of pages available",
+		)
+	}
+
+	items := make([]any, len(customers))
+	for i, customer := range customers {
+		items[i] = customer
+	}
+
+	return &ListResult{
+		Items:      items,
+		TotalItems: total,
+		TotalPages: totalPages,
+	}, nil
 }
 
 func (s *service) Create(customer Customer) (*Customer, error) {
