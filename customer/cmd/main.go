@@ -24,7 +24,7 @@ func main() {
 	}
 
 	svc := pkg.NewService(pkg.NewValidator(), repository)
-	svc = pkg.LoggingMiddleware(svc, logger)
+	svc = pkg.NewLoggingService(svc, logger)
 
 	httpHandler := pkg.MakeHTTPHandler(svc, os.Getenv("AUTH_SERVICE_URL"))
 	http.ListenAndServe(":80", httpHandler)

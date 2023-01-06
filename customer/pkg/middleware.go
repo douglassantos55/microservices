@@ -2,16 +2,16 @@ package pkg
 
 import "github.com/go-kit/kit/log"
 
-type logging struct {
+type loggingService struct {
 	next   Service
 	logger log.Logger
 }
 
-func LoggingMiddleware(svc Service, logger log.Logger) Service {
-	return &logging{svc, logger}
+func NewLoggingService(svc Service, logger log.Logger) Service {
+	return &loggingService{svc, logger}
 }
 
-func (l *logging) Create(data Customer) (customer *Customer, err error) {
+func (l *loggingService) Create(data Customer) (customer *Customer, err error) {
 	defer func() {
 		l.logger.Log(
 			"method", "Create",
