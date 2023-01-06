@@ -20,6 +20,9 @@ spec:
         imagePullPolicy: Never
         ports:
         - containerPort: 80
+          name: http
+        - containerPort: 8080
+          name: grpc
         env:
         - name: JWT_SIGN_SECRET
           value: jwt-sign-secret
@@ -36,7 +39,13 @@ spec:
     app: auth
   ports:
     - protocol: TCP
+      name: http
       port: 80
       targetPort: 80
       nodePort: 30000
+    - protocol: TCP
+      name: grpc
+      port: 8080
+      targetPort: 8080
+      nodePort: 30200
 
