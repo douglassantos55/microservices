@@ -2,7 +2,8 @@ package pkg
 
 import (
 	"encoding/json"
-	"io"
+
+	"reconcip.com.br/microservices/customer/proto"
 )
 
 type Error struct {
@@ -15,14 +16,16 @@ func NewError(status int, title, message string) Error {
 	return Error{status, title, message}
 }
 
-func NewErrorFromResponse(body io.ReadCloser) Error {
-	var error Error
-	json.NewDecoder(body).Decode(&error)
-	return error
+func NewErrorFromReply(err *proto.Error) Error {
+	return Error{
+		Status:  int(err.GetStatus()),
+		Title:   err.GetTitle(),
+		Message: err.GetDetail(),
+	}
 }
 
 func (e Error) StatusCode() int {
-	return e.Status
+	return int(e.Status)
 }
 
 func (e Error) Error() string {

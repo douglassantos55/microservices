@@ -2,7 +2,6 @@ package pkg
 
 import (
 	"context"
-	"errors"
 
 	"github.com/go-kit/kit/auth/jwt"
 	"github.com/go-kit/kit/endpoint"
@@ -42,18 +41,18 @@ func nopGRPCRequestEncoder(ctx context.Context, r any) (any, error) {
 }
 
 func decodeVerifyResponse(ctx context.Context, r any) (any, error) {
-	rep := r.(*proto.VerifyReply)
+	reply := r.(*proto.VerifyReply)
 
-	if rep.GetErr() != "" {
-		return nil, errors.New(rep.GetErr())
+	if reply.GetErr() != nil {
+		return nil, NewErrorFromReply(reply.GetErr())
 	}
 
 	var user struct {
 		ID   string `json:"id"`
 		Name string `json:"name"`
 	}
-	user.ID = rep.User.Id
-	user.Name = rep.User.Name
+	user.ID = reply.User.Id
+	user.Name = reply.User.Name
 
 	return user, nil
 }
