@@ -48,3 +48,14 @@ func (l *loggingService) Update(id string, data Customer) (customer *Customer, e
 	}()
 	return l.next.Update(id, data)
 }
+
+func (l *loggingService) Delete(id string) (err error) {
+	defer func() {
+		l.logger.Log(
+			"method", "Delete",
+			"id", id,
+			"err", err,
+		)
+	}()
+	return l.next.Delete(id)
+}

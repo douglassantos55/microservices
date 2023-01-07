@@ -40,6 +40,7 @@ type Service interface {
 	List(page, perPage int64) (*ListResult, error)
 	Create(Customer) (*Customer, error)
 	Update(id string, data Customer) (*Customer, error)
+	Delete(string) error
 }
 
 type service struct {
@@ -99,4 +100,16 @@ func (s *service) Update(id string, data Customer) (*Customer, error) {
 		)
 	}
 	return s.repository.Update(id, data)
+}
+
+func (s *service) Delete(id string) error {
+	_, err := s.repository.Get(id)
+	if err != nil {
+		return NewError(
+			http.StatusNotFound,
+			"customer not found",
+			"could not find the customer you're delete to edit",
+		)
+	}
+	return s.repository.Delete(id)
 }

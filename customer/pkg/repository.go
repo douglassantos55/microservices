@@ -15,6 +15,7 @@ type Repository interface {
 	Get(id string) (*Customer, error)
 	Create(Customer) (*Customer, error)
 	Update(string, Customer) (*Customer, error)
+	Delete(string) error
 }
 
 type mongoRepository struct {
@@ -94,4 +95,10 @@ func (r *mongoRepository) Get(id string) (*Customer, error) {
 	err := collection.FindOne(ctx, bson.M{"_id": id}).Decode(&customer)
 
 	return customer, err
+}
+
+func (r *mongoRepository) Delete(id string) error {
+	collection := r.client.Database("customer").Collection("customers")
+	_, err := collection.DeleteOne(context.Background(), bson.M{"_id": id})
+	return err
 }
