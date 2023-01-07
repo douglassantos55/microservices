@@ -33,7 +33,7 @@ func main() {
 		panic(err)
 	}
 
-    defer cc.Close()
+	defer cc.Close()
 
 	httpHandler := pkg.MakeHTTPHandler(svc, cc)
 	http.ListenAndServe(":80", httpHandler)

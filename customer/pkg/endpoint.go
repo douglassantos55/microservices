@@ -18,3 +18,10 @@ func makeListEndpoint(svc Service) endpoint.Endpoint {
 		return svc.List(pagination.Page, pagination.PerPage)
 	}
 }
+
+func makeUpdateEndpoint(svc Service) endpoint.Endpoint {
+	return func(ctx context.Context, r any) (any, error) {
+		req := r.(UpdateRequest)
+		return svc.Update(req.ID, req.Data)
+	}
+}

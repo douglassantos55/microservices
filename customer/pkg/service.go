@@ -7,7 +7,7 @@ import (
 )
 
 type Customer struct {
-	ID           string    `bson:"_id" json:"id"`
+	ID           string    `bson:"_id,omitempty" json:"id,omitempty"`
 	Name         string    `bson:"name" json:"name" validate:"required"`
 	Email        string    `bson:"email" json:"email" validate:"omitempty,email"`
 	Birthdate    time.Time `bson:"birthdate" json:"birthdate" validate:"omitempty"`
@@ -39,6 +39,7 @@ type ListResult struct {
 type Service interface {
 	List(page, perPage int64) (*ListResult, error)
 	Create(Customer) (*Customer, error)
+	Update(id string, data Customer) (*Customer, error)
 }
 
 type service struct {
@@ -86,4 +87,16 @@ func (s *service) Create(customer Customer) (*Customer, error) {
 		return nil, err
 	}
 	return s.repository.Create(customer)
+}
+
+func (s *service) Update(id string, data Customer) (*Customer, error) {
+	_, err := s.repository.Get(id)
+	if err != nil {
+		return nil, NewError(
+			http.StatusNotFound,
+			"customer not found",
+			"could not find the customer you're trying to edit",
+		)
+	}
+	return s.repository.Update(id, data)
 }

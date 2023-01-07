@@ -34,6 +34,13 @@ func MakeHTTPHandler(svc Service, cc *grpc.ClientConn) http.Handler {
 		opts...,
 	))
 
+	router.Handler(http.MethodPut, "/:id", httptransport.NewServer(
+		verify(makeUpdateEndpoint(svc)),
+		decodeUpdateRequest,
+		httptransport.EncodeJSONResponse,
+		opts...,
+	))
+
 	return router
 }
 
@@ -67,4 +74,23 @@ func decodeListRequest(ctx context.Context, r *http.Request) (any, error) {
 type Pagination struct {
 	Page    int64
 	PerPage int64
+}
+
+func decodeUpdateRequest(ctx context.Context, r *http.Request) (any, error) {
+	var data Customer
+	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+		return nil, NewError(
+			http.StatusBadRequest,
+			"invalid input data",
+			"the provided input is invalid, please verify and try again",
+		)
+	}
+
+	params := httprouter.ParamsFromContext(r.Context())
+	return UpdateRequest{ID: params.ByName("id"), Data: data}, nil
+}
+
+type UpdateRequest struct {
+	ID   string   `json:"id"`
+	Data Customer `json:"data"`
 }

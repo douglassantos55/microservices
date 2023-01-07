@@ -35,3 +35,16 @@ func (l *loggingService) Create(data Customer) (customer *Customer, err error) {
 	}()
 	return l.next.Create(data)
 }
+
+func (l *loggingService) Update(id string, data Customer) (customer *Customer, err error) {
+	defer func() {
+		l.logger.Log(
+			"method", "Update",
+			"id", id,
+			"input", data,
+			"output", customer,
+			"err", err,
+		)
+	}()
+	return l.next.Update(id, data)
+}

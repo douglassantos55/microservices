@@ -12,7 +12,9 @@ import (
 
 type Repository interface {
 	List(curPage, perPage int64) ([]*Customer, int64, error)
+	Get(id string) (*Customer, error)
 	Create(Customer) (*Customer, error)
+	Update(string, Customer) (*Customer, error)
 }
 
 type mongoRepository struct {
@@ -70,4 +72,26 @@ func (r *mongoRepository) Create(data Customer) (*Customer, error) {
 	collection.FindOne(ctx, filter).Decode(&customer)
 
 	return customer, nil
+}
+
+func (r *mongoRepository) Update(id string, customer Customer) (*Customer, error) {
+	ctx := context.Background()
+	collection := r.client.Database("customer").Collection("customers")
+
+	_, err := collection.ReplaceOne(ctx, bson.M{"_id": id}, customer)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.Get(id)
+}
+
+func (r *mongoRepository) Get(id string) (*Customer, error) {
+	var customer *Customer
+
+	ctx := context.Background()
+	collection := r.client.Database("customer").Collection("customers")
+	err := collection.FindOne(ctx, bson.M{"_id": id}).Decode(&customer)
+
+	return customer, err
 }
