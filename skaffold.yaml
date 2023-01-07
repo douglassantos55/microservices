@@ -1,0 +1,19 @@
+apiVersion: skaffold/v4beta1
+kind: Config
+metadata:
+  name: microservices
+build:
+  artifacts:
+  - image: auth
+    context: auth
+    docker:
+      dockerfile: Dockerfile
+  - image: customer
+    context: customer
+    docker:
+      dockerfile: Dockerfile
+manifests:
+  rawYaml:
+  - auth.yml
+  - customer.yml
+  - mongodb.yml
