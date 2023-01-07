@@ -4,22 +4,20 @@ import (
 	"math"
 	"net/http"
 	"time"
-
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Customer struct {
-	ID           primitive.ObjectID `bson:"_id" json:"id"`
-	Name         string             `bson:"name" json:"name" validate:"required"`
-	Email        string             `bson:"email" json:"email" validate:"omitempty,email"`
-	Birthdate    time.Time          `bson:"birthdate" json:"birthdate" validate:"omitempty"`
-	CpfCnpj      string             `bson:"cpf_cnpj" json:"cpf_cnpj" validate:"required"`
-	RgInscEst    string             `bson:"rg_insc_est" json:"rg_insc_est"`
-	Phone        string             `bson:"phone" json:"phone"`
-	Cellphone    string             `bson:"cellphone" json:"cellphone"`
-	Ocupation    string             `bson:"ocupation" json:"ocupation"`
-	Address      Address            `bson:"inline" json:"address" validate:"required"`
-	Observations string             `bson:"observations" json:"observations"`
+	ID           string    `bson:"_id" json:"id"`
+	Name         string    `bson:"name" json:"name" validate:"required"`
+	Email        string    `bson:"email" json:"email" validate:"omitempty,email"`
+	Birthdate    time.Time `bson:"birthdate" json:"birthdate" validate:"omitempty"`
+	CpfCnpj      string    `bson:"cpf_cnpj" json:"cpf_cnpj" validate:"required"`
+	RgInscEst    string    `bson:"rg_insc_est" json:"rg_insc_est"`
+	Phone        string    `bson:"phone" json:"phone"`
+	Cellphone    string    `bson:"cellphone" json:"cellphone"`
+	Ocupation    string    `bson:"ocupation" json:"ocupation"`
+	Address      Address   `bson:"inline" json:"address" validate:"required"`
+	Observations string    `bson:"observations" json:"observations"`
 }
 
 type Address struct {

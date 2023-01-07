@@ -58,7 +58,7 @@ func (r *mongoRepository) Create(data Customer) (*Customer, error) {
 	ctx := context.Background()
 	collection := r.client.Database("customer").Collection("customers")
 
-	data.ID = primitive.NewObjectID()
+	data.ID = primitive.NewObjectID().Hex()
 	result, err := collection.InsertOne(ctx, data)
 
 	if err != nil {
@@ -66,7 +66,7 @@ func (r *mongoRepository) Create(data Customer) (*Customer, error) {
 	}
 
 	var customer *Customer
-	filter := bson.M{"_id": result.InsertedID.(primitive.ObjectID)}
+	filter := bson.M{"_id": result.InsertedID.(string)}
 	collection.FindOne(ctx, filter).Decode(&customer)
 
 	return customer, nil
