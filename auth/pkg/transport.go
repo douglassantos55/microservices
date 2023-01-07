@@ -9,6 +9,7 @@ import (
 	"github.com/go-kit/kit/transport/grpc"
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/julienschmidt/httprouter"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"reconcip.com.br/microservices/auth/proto"
 )
 
@@ -52,12 +53,12 @@ func NewGRPCServer(svc Service) proto.AuthServer {
 	}
 }
 
-func (s *grpcServer) Verify(ctx context.Context, r *proto.Token) (*proto.VerifyReply, error) {
-	_, rep, err := s.verify.ServeGRPC(ctx, r)
+func (s *grpcServer) Verify(ctx context.Context, r *emptypb.Empty) (*proto.VerifyReply, error) {
+	_, reply, err := s.verify.ServeGRPC(ctx, r)
 	if err != nil {
 		return nil, err
 	}
-	return rep.(*proto.VerifyReply), nil
+	return reply.(*proto.VerifyReply), nil
 }
 
 // NopGRCPRequestDecoder is a DecodeRequestFunc that can be used for requests
@@ -67,7 +68,10 @@ func nopGRPCRequestDecoder(ctx context.Context, r any) (any, error) {
 }
 
 func encodeVerifyResponse(ctx context.Context, r any) (any, error) {
-	reply := r.(*User)
-	user := &proto.User{Id: reply.ID, Name: reply.Name}
+	reply := r.(VerifyResponse)
+	if reply.Err != nil {
+		return &proto.VerifyReply{Err: reply.Err.AsError()}, nil
+	}
+	user := &proto.User{Id: reply.User.ID, Name: reply.User.Name}
 	return &proto.VerifyReply{User: user}, nil
 }

@@ -12,14 +12,24 @@ func makeVerifyEndpoint(svc Service) endpoint.Endpoint {
 	return func(ctx context.Context, r any) (any, error) {
 		token, ok := ctx.Value(jwt.JWTContextKey).(string)
 		if !ok {
-			return nil, NewError(
+			return VerifyResponse{nil, NewError(
 				http.StatusBadRequest,
 				"Empty authorization token",
 				"could not find token in authorization header",
-			)
+			)}, nil
 		}
-		return svc.Verify(token)
+		user, err := svc.Verify(token)
+		return VerifyResponse{user, err}, nil
 	}
+}
+
+type VerifyResponse struct {
+	User *User `json:"user"`
+	Err  Error `json:"-"`
+}
+
+func (r VerifyResponse) Failed() error {
+	return r.Err
 }
 
 func makeLoginEndpoint(svc Service) endpoint.Endpoint {

@@ -30,10 +30,10 @@ type AuthResponse struct {
 
 type Service interface {
 	// Validates credencials and authenticates user
-	Login(user, pass string) (*AuthResponse, error)
+	Login(user, pass string) (*AuthResponse, Error)
 
 	// Validates and verifies token
-	Verify(token string) (*User, error)
+	Verify(token string) (*User, Error)
 }
 
 type service struct {
@@ -44,7 +44,7 @@ func NewService(tg TokenGenerator) Service {
 	return &service{tg}
 }
 
-func (s *service) Login(username, pass string) (*AuthResponse, error) {
+func (s *service) Login(username, pass string) (*AuthResponse, Error) {
 	if username != "admin" || pass != "123" {
 		return nil, NewError(
 			http.StatusUnprocessableEntity,
@@ -86,7 +86,7 @@ func (s *service) Login(username, pass string) (*AuthResponse, error) {
 	return &AuthResponse{user, token, refreshToken}, nil
 }
 
-func (s *service) Verify(tokenStr string) (*User, error) {
+func (s *service) Verify(tokenStr string) (*User, Error) {
 	token, err := s.tokenGen.Verify(tokenStr, os.Getenv(JWT_SIGN_SECRET_ENV))
 	if err != nil {
 		return nil, NewError(

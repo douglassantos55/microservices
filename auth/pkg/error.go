@@ -1,26 +1,44 @@
 package pkg
 
-import "encoding/json"
+import (
+	"encoding/json"
 
-type Error struct {
+	"reconcip.com.br/microservices/auth/proto"
+)
+
+type Error interface {
+	error
+	StatusCode() int
+	AsError() *proto.Error
+}
+
+type errorMessage struct {
 	Status  int    `json:"status"`
 	Title   string `json:"title"`
 	Message string `json:"detail"`
 }
 
 func NewError(status int, title, message string) Error {
-	return Error{status, title, message}
+	return errorMessage{status, title, message}
 }
 
-func (e Error) StatusCode() int {
+func (e errorMessage) StatusCode() int {
 	return e.Status
 }
 
-func (e Error) Error() string {
+func (e errorMessage) Error() string {
 	return e.Title
 }
 
-func (e Error) MarshalJSON() ([]byte, error) {
+func (e errorMessage) AsError() *proto.Error {
+	return &proto.Error{
+		Status: uint32(e.StatusCode()),
+		Title:  e.Title,
+		Detail: e.Message,
+	}
+}
+
+func (e errorMessage) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[string]any{
 		"status": e.StatusCode(),
 		"title":  e.Title,
