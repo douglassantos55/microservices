@@ -9,11 +9,13 @@ import (
 	"github.com/go-kit/kit/auth/jwt"
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/julienschmidt/httprouter"
+	"google.golang.org/grpc"
 )
 
-func MakeHTTPHandler(svc Service, authService string) http.Handler {
+func MakeHTTPHandler(svc Service, cc *grpc.ClientConn) http.Handler {
 	router := httprouter.New()
-	verify := verifyMiddleware(authService)
+	verify := verifyMiddleware(cc)
+
 	opts := []httptransport.ServerOption{
 		httptransport.ServerBefore(jwt.HTTPToContext()),
 	}

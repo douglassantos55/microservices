@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/go-kit/kit/log"
+	"google.golang.org/grpc"
 	"reconcip.com.br/microservices/customer/pkg"
 )
 
@@ -26,6 +27,14 @@ func main() {
 	svc := pkg.NewService(pkg.NewValidator(), repository)
 	svc = pkg.NewLoggingService(svc, logger)
 
-	httpHandler := pkg.MakeHTTPHandler(svc, os.Getenv("AUTH_SERVICE_URL"))
+	authServiceUrl := os.Getenv("AUTH_SERVICE_URL")
+	cc, err := grpc.Dial(authServiceUrl+":8080", grpc.WithInsecure())
+	if err != nil {
+		panic(err)
+	}
+
+    defer cc.Close()
+
+	httpHandler := pkg.MakeHTTPHandler(svc, cc)
 	http.ListenAndServe(":80", httpHandler)
 }

@@ -2,18 +2,17 @@ package pkg
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"net/http"
-	"net/url"
+	"errors"
 
 	"github.com/go-kit/kit/auth/jwt"
 	"github.com/go-kit/kit/endpoint"
-	httptransport "github.com/go-kit/kit/transport/http"
+	grpctransport "github.com/go-kit/kit/transport/grpc"
+	"google.golang.org/grpc"
+	"reconcip.com.br/microservices/customer/proto"
 )
 
-func verifyMiddleware(service string) endpoint.Middleware {
-	verify := makeVerifyEndpoint(service)
+func verifyMiddleware(cc *grpc.ClientConn) endpoint.Middleware {
+	verify := makeVerifyEndpoint(cc)
 
 	return func(next endpoint.Endpoint) endpoint.Endpoint {
 		return func(ctx context.Context, r any) (any, error) {
@@ -26,49 +25,35 @@ func verifyMiddleware(service string) endpoint.Middleware {
 	}
 }
 
-func makeVerifyEndpoint(authService string) endpoint.Endpoint {
-	verifyUrl, err := url.Parse("http://" + authService + "/verify")
-	if err != nil {
-		panic(err)
-	}
-
-	return httptransport.NewClient(
-		"GET",
-		verifyUrl,
-		encodeVerifyRequest,
+func makeVerifyEndpoint(cc *grpc.ClientConn) endpoint.Endpoint {
+	return grpctransport.NewClient(
+		cc,
+		"proto.Auth",
+		"Verify",
+		nopGRPCRequestEncoder,
 		decodeVerifyResponse,
+		&proto.VerifyReply{},
+		grpctransport.ClientBefore(jwt.ContextToGRPC()),
 	).Endpoint()
 }
 
-func encodeVerifyRequest(ctx context.Context, req *http.Request, data any) error {
-	token, ok := ctx.Value(jwt.JWTContextKey).(string)
-	if !ok {
-		return NewError(
-			http.StatusBadRequest,
-			"empty authorization token",
-			"could not find token in authorization header",
-		)
-	}
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
-	return nil
+func nopGRPCRequestEncoder(ctx context.Context, r any) (any, error) {
+	return nil, nil
 }
 
-func decodeVerifyResponse(ctx context.Context, r *http.Response) (any, error) {
-	if r.StatusCode != http.StatusOK {
-		return nil, NewErrorFromResponse(r.Body)
+func decodeVerifyResponse(ctx context.Context, r any) (any, error) {
+	rep := r.(*proto.VerifyReply)
+
+	if rep.GetErr() != "" {
+		return nil, errors.New(rep.GetErr())
 	}
 
 	var user struct {
 		ID   string `json:"id"`
 		Name string `json:"name"`
 	}
+	user.ID = rep.User.Id
+	user.Name = rep.User.Name
 
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		return nil, NewError(
-			http.StatusBadGateway,
-			"unexpected response",
-			"could not parse unexpected response",
-		)
-	}
 	return user, nil
 }

@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "api.example.com/customer/proto";
+
+service Auth {
+    // Validates and verifies token
+    rpc Verify (Token) returns (VerifyReply) {}
+}
+
+message Token {
+    string token = 1;
+}
+
+message VerifyReply {
+    User user = 1;
+    string err = 4;
+}
+
+message User {
+    string id = 1;
+    string name = 2;
+}
