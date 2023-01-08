@@ -24,6 +24,7 @@ type Address struct {
 }
 
 type Service interface {
+	List(page, perPage int64) ([]*Supplier, int64, error)
 	Create(Supplier) (*Supplier, error)
 }
 
@@ -41,4 +42,8 @@ func (s *service) Create(data Supplier) (*Supplier, error) {
 		return nil, err
 	}
 	return s.repository.Create(data)
+}
+
+func (s *service) List(page, perPage int64) ([]*Supplier, int64, error) {
+	return s.repository.List(page, perPage)
 }

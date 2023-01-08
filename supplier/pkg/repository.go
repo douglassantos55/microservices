@@ -3,6 +3,7 @@ package pkg
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -13,6 +14,7 @@ import (
 type Repository interface {
 	Get(string) (*Supplier, error)
 	Create(Supplier) (*Supplier, error)
+	List(page, perPage int64) ([]*Supplier, int64, error)
 }
 
 type mongoRepository struct {
@@ -51,4 +53,32 @@ func (r *mongoRepository) Get(id string) (*Supplier, error) {
 	err := collection.FindOne(ctx, bson.M{"_id": id}).Decode(&customer)
 
 	return customer, err
+}
+
+func (r *mongoRepository) List(page, perPage int64) ([]*Supplier, int64, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	collection := r.database.Collection("suppliers")
+
+	defer cancel()
+
+	options := options.Find()
+	options.SetLimit(perPage)
+	options.SetSkip(page * perPage)
+
+	total, err := collection.EstimatedDocumentCount(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	result, err := collection.Find(ctx, bson.D{}, options)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	var suppliers []*Supplier
+	if err := result.All(ctx, &suppliers); err != nil {
+		return nil, 0, err
+	}
+
+	return suppliers, total, nil
 }
