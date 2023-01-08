@@ -75,7 +75,7 @@ func (s *service) List(page, perPage int64) (*ListResult, error) {
 		)
 	}
 
-	totalPages := int64(math.Max(1, float64(total/perPage)))
+	totalPages := int64(math.Max(1, math.Round(float64(total)/float64(perPage))))
 	if page >= totalPages {
 		return nil, NewError(
 			http.StatusBadRequest,
