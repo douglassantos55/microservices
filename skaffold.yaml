@@ -12,8 +12,13 @@ build:
     context: customer
     docker:
       dockerfile: Dockerfile
+  - image: supplier
+    context: supplier
+    docker:
+      dockerfile: Dockerfile
 manifests:
   rawYaml:
   - auth.yml
   - customer.yml
   - mongodb.yml
+  - supplier.yml
