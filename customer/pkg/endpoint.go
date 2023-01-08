@@ -13,9 +13,16 @@ func makeCreateEndpoint(svc Service) endpoint.Endpoint {
 	}
 }
 
+func makeGetEndpoint(svc Service) endpoint.Endpoint {
+	return func(ctx context.Context, r any) (any, error) {
+		return svc.Get(r.(string))
+	}
+}
+
 func makeListEndpoint(svc Service) endpoint.Endpoint {
 	return func(ctx context.Context, r any) (any, error) {
 		pagination := r.(Pagination)
+		// TODO: create result here and return simpler stuff from service?
 		return svc.List(pagination.Page, pagination.PerPage)
 	}
 }

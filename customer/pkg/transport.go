@@ -20,6 +20,13 @@ func MakeHTTPHandler(svc Service, cc *grpc.ClientConn) http.Handler {
 		httptransport.ServerBefore(jwt.HTTPToContext()),
 	}
 
+	router.Handler(http.MethodGet, "/:id", httptransport.NewServer(
+		verify(makeGetEndpoint(svc)),
+		GetURLParamDecoder("id"),
+		httptransport.EncodeJSONResponse,
+		opts...,
+	))
+
 	router.Handler(http.MethodPost, "/", httptransport.NewServer(
 		verify(makeCreateEndpoint(svc)),
 		decodeCreateRequest,
@@ -43,7 +50,7 @@ func MakeHTTPHandler(svc Service, cc *grpc.ClientConn) http.Handler {
 
 	router.Handler(http.MethodDelete, "/:id", httptransport.NewServer(
 		verify(makeDeleteEndpoint(svc)),
-		decodeDeleteRequest,
+		GetURLParamDecoder("id"),
 		httptransport.EncodeJSONResponse,
 		opts...,
 	))
@@ -102,7 +109,9 @@ type UpdateRequest struct {
 	Data Customer `json:"data"`
 }
 
-func decodeDeleteRequest(ctx context.Context, r *http.Request) (any, error) {
-	params := httprouter.ParamsFromContext(r.Context())
-	return params.ByName("id"), nil
+func GetURLParamDecoder(param string) httptransport.DecodeRequestFunc {
+	return func(ctx context.Context, r *http.Request) (any, error) {
+		params := httprouter.ParamsFromContext(r.Context())
+		return params.ByName(param), nil
+	}
 }

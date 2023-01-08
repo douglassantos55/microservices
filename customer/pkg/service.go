@@ -37,6 +37,7 @@ type ListResult struct {
 }
 
 type Service interface {
+	Get(string) (*Customer, error)
 	List(page, perPage int64) (*ListResult, error)
 	Create(Customer) (*Customer, error)
 	Update(id string, data Customer) (*Customer, error)
@@ -50,6 +51,18 @@ type service struct {
 
 func NewService(validator Validator, repository Repository) Service {
 	return &service{validator, repository}
+}
+
+func (s *service) Get(id string) (*Customer, error) {
+	customer, err := s.repository.Get(id)
+	if err != nil {
+		return nil, NewError(
+			http.StatusNotFound,
+			"customer not found",
+			"could not find the customer you're looking for",
+		)
+	}
+	return customer, nil
 }
 
 func (s *service) List(page, perPage int64) (*ListResult, error) {
@@ -108,7 +121,7 @@ func (s *service) Delete(id string) error {
 		return NewError(
 			http.StatusNotFound,
 			"customer not found",
-			"could not find the customer you're delete to edit",
+			"could not find the customer you're trying to delete",
 		)
 	}
 	return s.repository.Delete(id)

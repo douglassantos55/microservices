@@ -11,6 +11,18 @@ func NewLoggingService(svc Service, logger log.Logger) Service {
 	return &loggingService{svc, logger}
 }
 
+func (l *loggingService) Get(id string) (customer *Customer, err error) {
+	defer func() {
+		l.logger.Log(
+			"method", "Get",
+			"input", id,
+			"output", customer,
+			"err", err,
+		)
+	}()
+	return l.next.Get(id)
+}
+
 func (l *loggingService) List(page, perPage int64) (result *ListResult, err error) {
 	defer func() {
 		l.logger.Log(
@@ -53,7 +65,7 @@ func (l *loggingService) Delete(id string) (err error) {
 	defer func() {
 		l.logger.Log(
 			"method", "Delete",
-			"id", id,
+			"input", id,
 			"err", err,
 		)
 	}()
