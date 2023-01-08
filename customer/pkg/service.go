@@ -11,7 +11,7 @@ type Customer struct {
 	Name         string    `bson:"name" json:"name" validate:"required"`
 	Email        string    `bson:"email" json:"email" validate:"omitempty,email"`
 	Birthdate    time.Time `bson:"birthdate" json:"birthdate" validate:"omitempty"`
-	CpfCnpj      string    `bson:"cpf_cnpj" json:"cpf_cnpj" validate:"required"`
+	CpfCnpj      string    `bson:"cpf_cnpj" json:"cpf_cnpj" validate:"required,cpf_cnpj"`
 	RgInscEst    string    `bson:"rg_insc_est" json:"rg_insc_est"`
 	Phone        string    `bson:"phone" json:"phone"`
 	Cellphone    string    `bson:"cellphone" json:"cellphone"`

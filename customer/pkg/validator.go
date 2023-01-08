@@ -16,7 +16,16 @@ type validate struct {
 }
 
 func NewValidator() Validator {
-	return &validate{validator.New()}
+	validator := &validate{validator.New()}
+	validator.registerRules()
+	return validator
+}
+
+func (v *validate) registerRules() {
+	v.validator.RegisterValidation("cpf_cnpj", func(fl validator.FieldLevel) bool {
+		value := fl.Field().String()
+		return IsCPF(value) || IsCNPJ(value)
+	})
 }
 
 func (v *validate) Validate(data any) error {
