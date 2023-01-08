@@ -19,20 +19,21 @@ type Repository interface {
 }
 
 type mongoRepository struct {
-	client *mongo.Client
+	database *mongo.Database
 }
 
-func NewMongoRepository(mongoUrl string, user, pass string) (Repository, error) {
+func NewMongoRepository(mongoUrl, user, pass, db string) (Repository, error) {
 	uri := fmt.Sprintf("mongodb://%s:%s@%s/", user, pass, mongoUrl)
 	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(uri))
 	if err != nil {
 		return nil, err
 	}
-	return &mongoRepository{client}, nil
+	database := client.Database(db)
+	return &mongoRepository{database}, nil
 }
 
 func (r *mongoRepository) List(curPage, perPage int64) ([]*Customer, int64, error) {
-	collection := r.client.Database("customer").Collection("customers")
+	collection := r.database.Collection("customers")
 
 	opts := options.Find()
 	opts.SetLimit(perPage)
@@ -59,7 +60,7 @@ func (r *mongoRepository) List(curPage, perPage int64) ([]*Customer, int64, erro
 
 func (r *mongoRepository) Create(data Customer) (*Customer, error) {
 	ctx := context.Background()
-	collection := r.client.Database("customer").Collection("customers")
+	collection := r.database.Collection("customers")
 
 	data.ID = primitive.NewObjectID().Hex()
 	result, err := collection.InsertOne(ctx, data)
@@ -77,7 +78,7 @@ func (r *mongoRepository) Create(data Customer) (*Customer, error) {
 
 func (r *mongoRepository) Update(id string, customer Customer) (*Customer, error) {
 	ctx := context.Background()
-	collection := r.client.Database("customer").Collection("customers")
+	collection := r.database.Collection("customers")
 
 	_, err := collection.ReplaceOne(ctx, bson.M{"_id": id}, customer)
 	if err != nil {
@@ -91,14 +92,14 @@ func (r *mongoRepository) Get(id string) (*Customer, error) {
 	var customer *Customer
 
 	ctx := context.Background()
-	collection := r.client.Database("customer").Collection("customers")
+	collection := r.database.Collection("customers")
 	err := collection.FindOne(ctx, bson.M{"_id": id}).Decode(&customer)
 
 	return customer, err
 }
 
 func (r *mongoRepository) Delete(id string) error {
-	collection := r.client.Database("customer").Collection("customers")
+	collection := r.database.Collection("customers")
 	_, err := collection.DeleteOne(context.Background(), bson.M{"_id": id})
 	return err
 }

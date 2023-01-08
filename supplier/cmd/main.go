@@ -14,6 +14,7 @@ func main() {
 		os.Getenv("MONGODB_URL"),
 		os.Getenv("MONGODB_USER"),
 		os.Getenv("MONGODB_PASSWORD"),
+		os.Getenv("MONGODB_DATABASE"),
 	)
 
 	if err != nil {

@@ -16,21 +16,22 @@ type Repository interface {
 }
 
 type mongoRepository struct {
-	client *mongo.Client
+	database *mongo.Database
 }
 
-func NewMongoRepository(mongoUrl string, user, pass string) (Repository, error) {
+func NewMongoRepository(mongoUrl, user, pass, db string) (Repository, error) {
 	uri := fmt.Sprintf("mongodb://%s:%s@%s/", user, pass, mongoUrl)
 	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(uri))
 	if err != nil {
 		return nil, err
 	}
-	return &mongoRepository{client}, nil
+	database := client.Database(db)
+	return &mongoRepository{database}, nil
 }
 
 func (r *mongoRepository) Create(data Supplier) (*Supplier, error) {
 	ctx := context.Background()
-	collection := r.client.Database("customer").Collection("customers")
+	collection := r.database.Collection("suppliers")
 
 	data.ID = primitive.NewObjectID().Hex()
 	result, err := collection.InsertOne(ctx, data)
@@ -46,7 +47,7 @@ func (r *mongoRepository) Get(id string) (*Supplier, error) {
 	var customer *Supplier
 
 	ctx := context.Background()
-	collection := r.client.Database("customer").Collection("customers")
+	collection := r.database.Collection("suppliers")
 	err := collection.FindOne(ctx, bson.M{"_id": id}).Decode(&customer)
 
 	return customer, err

@@ -29,6 +29,8 @@ spec:
           value: root
         - name: MONGODB_PASSWORD
           value: "123"
+        - name: MONGODB_DATABASE
+          value: reconcip
 ---
 apiVersion: v1
 kind: Service
