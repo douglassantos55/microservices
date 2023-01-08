@@ -16,6 +16,7 @@ type Repository interface {
 	Create(Supplier) (*Supplier, error)
 	List(page, perPage int64) ([]*Supplier, int64, error)
 	Update(string, Supplier) (*Supplier, error)
+	Delete(string) error
 }
 
 type mongoRepository struct {
@@ -96,4 +97,14 @@ func (r *mongoRepository) Update(id string, data Supplier) (*Supplier, error) {
 	}
 
 	return r.Get(id)
+}
+
+func (r *mongoRepository) Delete(id string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	collection := r.database.Collection("suppliers")
+
+	defer cancel()
+
+	_, err := collection.DeleteOne(ctx, bson.M{"_id": id})
+	return err
 }

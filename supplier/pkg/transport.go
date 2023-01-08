@@ -31,6 +31,12 @@ func NewHTTPServer(svc Service) http.Handler {
 		httptransport.EncodeJSONResponse,
 	))
 
+	router.Handler(http.MethodDelete, "/:id", httptransport.NewServer(
+		makeDeleteEndpoint(svc),
+		decodeDeleteRequest,
+		encodeDeleteResponse,
+	))
+
 	return router
 }
 
@@ -81,4 +87,14 @@ func decodeUpdateRequest(ctx context.Context, r *http.Request) (any, error) {
 type UpdateRequest struct {
 	ID   string   `json:"id"`
 	Data Supplier `json:"data"`
+}
+
+func decodeDeleteRequest(ctx context.Context, r *http.Request) (any, error) {
+	params := httprouter.ParamsFromContext(r.Context())
+	return params.ByName("id"), nil
+}
+
+func encodeDeleteResponse(ctx context.Context, res http.ResponseWriter, r any) error {
+	res.WriteHeader(http.StatusNoContent)
+	return nil
 }

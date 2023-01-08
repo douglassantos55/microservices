@@ -29,6 +29,7 @@ type Service interface {
 	List(page, perPage int64) ([]*Supplier, int64, error)
 	Create(Supplier) (*Supplier, error)
 	Update(string, Supplier) (*Supplier, error)
+	Delete(string) error
 }
 
 func NewService(validator Validator, repository Repository) Service {
@@ -63,4 +64,15 @@ func (s *service) Update(id string, data Supplier) (*Supplier, error) {
 		return nil, err
 	}
 	return s.repository.Update(id, data)
+}
+
+func (s *service) Delete(id string) error {
+	if _, err := s.repository.Get(id); err != nil {
+		return NewError(
+			http.StatusNotFound,
+			"supplier not found",
+			"could not find the supplier you're trying to delete",
+		)
+	}
+	return s.repository.Delete(id)
 }
