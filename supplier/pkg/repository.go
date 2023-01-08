@@ -15,6 +15,7 @@ type Repository interface {
 	Get(string) (*Supplier, error)
 	Create(Supplier) (*Supplier, error)
 	List(page, perPage int64) ([]*Supplier, int64, error)
+	Update(string, Supplier) (*Supplier, error)
 }
 
 type mongoRepository struct {
@@ -81,4 +82,18 @@ func (r *mongoRepository) List(page, perPage int64) ([]*Supplier, int64, error) 
 	}
 
 	return suppliers, total, nil
+}
+
+func (r *mongoRepository) Update(id string, data Supplier) (*Supplier, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	collection := r.database.Collection("suppliers")
+
+	defer cancel()
+
+	_, err := collection.ReplaceOne(ctx, bson.M{"_id": id}, data)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.Get(id)
 }

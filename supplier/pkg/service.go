@@ -1,5 +1,7 @@
 package pkg
 
+import "net/http"
+
 type Supplier struct {
 	ID           string  `json:"id,omitempty" bson:"_id,omitempty"`
 	SocialName   string  `json:"social_name" bson:"social_name" validate:"required"`
@@ -26,6 +28,7 @@ type Address struct {
 type Service interface {
 	List(page, perPage int64) ([]*Supplier, int64, error)
 	Create(Supplier) (*Supplier, error)
+	Update(string, Supplier) (*Supplier, error)
 }
 
 func NewService(validator Validator, repository Repository) Service {
@@ -46,4 +49,18 @@ func (s *service) Create(data Supplier) (*Supplier, error) {
 
 func (s *service) List(page, perPage int64) ([]*Supplier, int64, error) {
 	return s.repository.List(page, perPage)
+}
+
+func (s *service) Update(id string, data Supplier) (*Supplier, error) {
+	if _, err := s.repository.Get(id); err != nil {
+		return nil, NewError(
+			http.StatusNotFound,
+			"supplier not found",
+			"could not find the supplier you're trying to edit",
+		)
+	}
+	if err := s.validator.Validate(data); err != nil {
+		return nil, err
+	}
+	return s.repository.Update(id, data)
 }

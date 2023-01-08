@@ -59,3 +59,10 @@ type ListResult struct {
 	TotalItems int64 `json:"total_items"`
 	TotalPages int64 `json:"total_pages"`
 }
+
+func makeUpdateEndpoint(svc Service) endpoint.Endpoint {
+	return func(ctx context.Context, r any) (any, error) {
+		req := r.(UpdateRequest)
+		return svc.Update(req.ID, req.Data)
+	}
+}
