@@ -104,13 +104,15 @@ func (s *service) Create(customer Customer) (*Customer, error) {
 }
 
 func (s *service) Update(id string, data Customer) (*Customer, error) {
-	_, err := s.repository.Get(id)
-	if err != nil {
+	if _, err := s.repository.Get(id); err != nil {
 		return nil, NewError(
 			http.StatusNotFound,
 			"customer not found",
 			"could not find the customer you're trying to edit",
 		)
+	}
+	if err := s.validator.Validate(data); err != nil {
+		return nil, err
 	}
 	return s.repository.Update(id, data)
 }
