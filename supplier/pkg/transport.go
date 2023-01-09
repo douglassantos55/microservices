@@ -6,41 +6,53 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/go-kit/kit/auth/jwt"
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/julienschmidt/httprouter"
+	"google.golang.org/grpc"
 )
 
-func NewHTTPServer(svc Service) http.Handler {
+func NewHTTPServer(svc Service, cc *grpc.ClientConn) http.Handler {
 	router := httprouter.New()
+	verify := verifyMiddleware(cc)
+
+	options := []httptransport.ServerOption{
+		httptransport.ServerBefore(jwt.HTTPToContext()),
+	}
 
 	router.Handler(http.MethodPost, "/", httptransport.NewServer(
-		makeCreateEndpoint(svc),
+		verify(makeCreateEndpoint(svc)),
 		decodeCreateRequest,
 		httptransport.EncodeJSONResponse,
+		options...,
 	))
 
 	router.Handler(http.MethodGet, "/", httptransport.NewServer(
-		makeListEndpoint(svc),
+		verify(makeListEndpoint(svc)),
 		decodeListRequest,
 		httptransport.EncodeJSONResponse,
+		options...,
 	))
 
 	router.Handler(http.MethodPut, "/:id", httptransport.NewServer(
-		makeUpdateEndpoint(svc),
+		verify(makeUpdateEndpoint(svc)),
 		decodeUpdateRequest,
 		httptransport.EncodeJSONResponse,
+		options...,
 	))
 
 	router.Handler(http.MethodDelete, "/:id", httptransport.NewServer(
-		makeDeleteEndpoint(svc),
+		verify(makeDeleteEndpoint(svc)),
 		GetUrlParamDecoder("id"),
 		encodeDeleteResponse,
+		options...,
 	))
 
 	router.Handler(http.MethodGet, "/:id", httptransport.NewServer(
-		makeGetEndpoint(svc),
+		verify(makeGetEndpoint(svc)),
 		GetUrlParamDecoder("id"),
 		httptransport.EncodeJSONResponse,
+		options...,
 	))
 
 	return router

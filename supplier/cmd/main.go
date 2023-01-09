@@ -1,9 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
+	"github.com/go-kit/log"
+	"google.golang.org/grpc"
 	"reconcip.com.br/microservices/supplier/pkg"
 )
 
@@ -27,4 +30,11 @@ func main() {
 
 	svc := pkg.NewService(validator, repository)
 	svc = pkg.NewLoggingService(svc, logger)
+
+	authServiceUrl := fmt.Sprintf("%s:8080", os.Getenv("AUTH_SERVICE_URL"))
+	conn, err := grpc.Dial(authServiceUrl, grpc.WithInsecure())
+	if err != nil {
+		panic(err)
+	}
+	http.ListenAndServe(":80", pkg.NewHTTPServer(svc, conn))
 }

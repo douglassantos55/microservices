@@ -2,6 +2,8 @@ package pkg
 
 import (
 	"encoding/json"
+
+	"reconcip.com.br/microservices/supplier/proto"
 )
 
 type Error struct {
@@ -20,6 +22,14 @@ func (e Error) StatusCode() int {
 
 func (e Error) Error() string {
 	return e.Title
+}
+
+func NewErrorFromReply(err *proto.Error) Error {
+	return Error{
+		Status:  int(err.GetStatus()),
+		Title:   err.GetTitle(),
+		Message: err.GetDetail(),
+	}
 }
 
 func (e Error) MarshalJSON() ([]byte, error) {
