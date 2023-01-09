@@ -21,6 +21,10 @@ func main() {
 		panic(err)
 	}
 
+	logger := log.NewJSONLogger(log.NewSyncWriter(os.Stderr))
+	logger = log.WithPrefix(logger, "ts", log.DefaultTimestamp)
+	logger = log.WithPrefix(logger, "caller", log.DefaultCaller)
+
 	svc := pkg.NewService(validator, repository)
-	http.ListenAndServe(":80", pkg.NewHTTPServer(svc))
+	svc = pkg.NewLoggingService(svc, logger)
 }
