@@ -9,47 +9,45 @@ import (
 	"github.com/go-kit/kit/auth/jwt"
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/julienschmidt/httprouter"
-	"google.golang.org/grpc"
 )
 
-func MakeHTTPHandler(svc Service, cc *grpc.ClientConn) http.Handler {
+func NewHTTPHandler(set Set) http.Handler {
 	router := httprouter.New()
-	verify := verifyMiddleware(cc)
 
 	opts := []httptransport.ServerOption{
 		httptransport.ServerBefore(jwt.HTTPToContext()),
 	}
 
 	router.Handler(http.MethodGet, "/:id", httptransport.NewServer(
-		verify(makeGetEndpoint(svc)),
+		set.Get,
 		GetURLParamDecoder("id"),
 		httptransport.EncodeJSONResponse,
 		opts...,
 	))
 
 	router.Handler(http.MethodPost, "/", httptransport.NewServer(
-		verify(makeCreateEndpoint(svc)),
+		set.Create,
 		decodeCreateRequest,
 		httptransport.EncodeJSONResponse,
 		opts...,
 	))
 
 	router.Handler(http.MethodGet, "/", httptransport.NewServer(
-		verify(makeListEndpoint(svc)),
+		set.List,
 		decodeListRequest,
 		httptransport.EncodeJSONResponse,
 		opts...,
 	))
 
 	router.Handler(http.MethodPut, "/:id", httptransport.NewServer(
-		verify(makeUpdateEndpoint(svc)),
+		set.Update,
 		decodeUpdateRequest,
 		httptransport.EncodeJSONResponse,
 		opts...,
 	))
 
 	router.Handler(http.MethodDelete, "/:id", httptransport.NewServer(
-		verify(makeDeleteEndpoint(svc)),
+		set.Delete,
 		GetURLParamDecoder("id"),
 		httptransport.EncodeJSONResponse,
 		opts...,

@@ -36,6 +36,7 @@ func main() {
 
 	defer cc.Close()
 
-	httpHandler := pkg.MakeHTTPHandler(svc, cc)
-	http.ListenAndServe(":80", httpHandler)
+	endpoints := pkg.NewSet(svc)
+	endpoints = pkg.NewVerifySet(endpoints, cc)
+	http.ListenAndServe(":80", pkg.NewHTTPHandler(endpoints))
 }

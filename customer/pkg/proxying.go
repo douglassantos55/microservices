@@ -10,6 +10,18 @@ import (
 	"reconcip.com.br/microservices/customer/proto"
 )
 
+func NewVerifySet(set Set, cc *grpc.ClientConn) Set {
+	verify := verifyMiddleware(cc)
+
+	return Set{
+		Get:    verify(set.Get),
+		List:   verify(set.List),
+		Create: verify(set.Create),
+		Update: verify(set.Update),
+		Delete: verify(set.Delete),
+	}
+}
+
 func verifyMiddleware(cc *grpc.ClientConn) endpoint.Middleware {
 	verify := makeVerifyEndpoint(cc)
 

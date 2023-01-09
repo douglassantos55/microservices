@@ -8,6 +8,24 @@ import (
 	"github.com/go-kit/kit/endpoint"
 )
 
+type Set struct {
+	Get    endpoint.Endpoint
+	List   endpoint.Endpoint
+	Create endpoint.Endpoint
+	Update endpoint.Endpoint
+	Delete endpoint.Endpoint
+}
+
+func NewSet(svc Service) Set {
+	return Set{
+		Get:    makeGetEndpoint(svc),
+		List:   makeListEndpoint(svc),
+		Create: makeCreateEndpoint(svc),
+		Update: makeUpdateEndpoint(svc),
+		Delete: makeDeleteEndpoint(svc),
+	}
+}
+
 func makeCreateEndpoint(svc Service) endpoint.Endpoint {
 	return func(ctx context.Context, r any) (any, error) {
 		data := r.(Supplier)

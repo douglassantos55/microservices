@@ -36,5 +36,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	http.ListenAndServe(":80", pkg.NewHTTPServer(svc, conn))
+
+	defer conn.Close()
+
+	endpoints := pkg.NewSet(svc)
+	endpoints = pkg.NewVerifySet(endpoints, conn)
+
+	http.ListenAndServe(":80", pkg.NewHTTPServer(endpoints))
 }
