@@ -1,15 +1,8 @@
 syntax = "proto3";
 
-import "google/protobuf/empty.proto";
-
 package proto;
 
 option go_package = "api.example.com/customer/proto";
-
-service Auth {
-    // Validates and verifies token, returning token's user as reply
-    rpc Verify (google.protobuf.Empty) returns (VerifyReply) {}
-}
 
 message VerifyReply {
     User user = 1;
