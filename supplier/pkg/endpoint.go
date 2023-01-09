@@ -69,13 +69,12 @@ func makeUpdateEndpoint(svc Service) endpoint.Endpoint {
 
 func makeDeleteEndpoint(svc Service) endpoint.Endpoint {
 	return func(ctx context.Context, r any) (any, error) {
-		if err := svc.Delete(r.(string)); err != nil {
-			return nil, NewError(
-				http.StatusInternalServerError,
-				"could not delete supplier",
-				"something went wrong while deleting supplier",
-			)
-		}
-		return nil, nil
+		return nil, svc.Delete(r.(string))
+	}
+}
+
+func makeGetEndpoint(svc Service) endpoint.Endpoint {
+	return func(ctx context.Context, r any) (any, error) {
+		return svc.Get(r.(string))
 	}
 }

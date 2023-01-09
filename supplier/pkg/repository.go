@@ -48,13 +48,22 @@ func (r *mongoRepository) Create(data Supplier) (*Supplier, error) {
 }
 
 func (r *mongoRepository) Get(id string) (*Supplier, error) {
-	var customer *Supplier
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 
-	ctx := context.Background()
+	var supplier *Supplier
 	collection := r.database.Collection("suppliers")
-	err := collection.FindOne(ctx, bson.M{"_id": id}).Decode(&customer)
+	result := collection.FindOne(ctx, bson.M{"_id": id})
 
-	return customer, err
+	if result.Err() != nil {
+		return nil, result.Err()
+	}
+
+	if err := result.Decode(&supplier); err != nil {
+		return nil, err
+	}
+
+	return supplier, nil
 }
 
 func (r *mongoRepository) List(page, perPage int64) ([]*Supplier, int64, error) {
