@@ -10,8 +10,31 @@ type Equipment struct {
 	PurchaseValue  float64        `json:"purchase_value" validate:"omitempty,numeric"`
 	ReplaceValue   float64        `json:"replace_value" validate:"omitempty,numeric"`
 	MinQty         int            `json:"min_qty" validate:"omitempty,number"`
-	SupplierID     string         `json:"supplier_id"`
+	SupplierID     string         `json:"supplier_id,omitempty"`
+	Supplier       *Supplier      `json:"supplier"`
 	RentingValues  []RentingValue `json:"renting_values" validate:"required,dive"`
+}
+
+type Supplier struct {
+	ID         string  `json:"id"`
+	SocialName string  `json:"social_name"`
+	LegalName  string  `json:"legal_name"`
+	Email      string  `json:"email"`
+	Website    string  `json:"website"`
+	Cnpj       string  `json:"cnpj"`
+	InscEst    string  `json:"insc_est"`
+	Phone      string  `json:"phone"`
+	Address    Address `json:"address"`
+}
+
+type Address struct {
+	Street       string `json:"street"`
+	Number       string `json:"number"`
+	Complement   string `json:"complement"`
+	Neighborhood string `json:"neighborhood"`
+	City         string `json:"city"`
+	State        string `json:"state"`
+	Postcode     string `json:"postcode"`
 }
 
 type RentingValue struct {
