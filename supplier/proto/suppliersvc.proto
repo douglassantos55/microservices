@@ -4,6 +4,37 @@ package proto;
 
 option go_package = "reconcip.com.br/supplier/proto";
 
+service SupplierService {
+    rpc Get(GetRequest) returns (Supplier) {}
+}
+
+message GetRequest {
+    string SupplierID = 1;
+}
+
+message Supplier {
+    string id = 1;
+    string social_name = 2;
+    string legal_name = 3;
+    string email = 4;
+    string website = 5;
+    string cnpj = 6;
+    string insc_est = 7;
+    string phone = 8;
+    Address address = 9;
+}
+
+message Address {
+	string street = 1;
+	string number = 2;
+	string complement = 3;
+	string neighborhood = 4;
+	string city = 5;
+	string state = 6;
+	string postcode = 7;
+}
+
+// Auth messages
 message VerifyReply {
     User user = 1;
     Error err = 2;

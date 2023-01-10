@@ -2,12 +2,15 @@ package main
 
 import (
 	"fmt"
+	"net"
 	"net/http"
 	"os"
+	"sync"
 
 	"github.com/go-kit/log"
 	"google.golang.org/grpc"
 	"reconcip.com.br/microservices/supplier/pkg"
+	"reconcip.com.br/microservices/supplier/proto"
 )
 
 func main() {
@@ -19,7 +22,6 @@ func main() {
 		os.Getenv("MONGODB_PASSWORD"),
 		os.Getenv("MONGODB_DATABASE"),
 	)
-
 	if err != nil {
 		panic(err)
 	}
@@ -31,16 +33,40 @@ func main() {
 	svc := pkg.NewService(validator, repository)
 	svc = pkg.NewLoggingService(svc, logger)
 
-	authServiceUrl := fmt.Sprintf("%s:8080", os.Getenv("AUTH_SERVICE_URL"))
-	conn, err := grpc.Dial(authServiceUrl, grpc.WithInsecure())
-	if err != nil {
-		panic(err)
-	}
-
-	defer conn.Close()
-
 	endpoints := pkg.NewSet(svc)
-	endpoints = pkg.NewVerifySet(endpoints, conn)
 
-	http.ListenAndServe(":80", pkg.NewHTTPServer(endpoints))
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go func() {
+		grpcListener, err := net.Listen("tcp", ":8080")
+		if err != nil {
+			panic(err)
+		}
+
+		defer grpcListener.Close()
+
+		server := grpc.NewServer()
+		grpcServer := pkg.NewGRPCServer(endpoints)
+		proto.RegisterSupplierServiceServer(server, grpcServer)
+
+		if err := server.Serve(grpcListener); err != nil {
+			panic(err)
+		}
+	}()
+
+	go func() {
+		authServiceUrl := fmt.Sprintf("%s:8080", os.Getenv("AUTH_SERVICE_URL"))
+		conn, err := grpc.Dial(authServiceUrl, grpc.WithInsecure())
+		if err != nil {
+			panic(err)
+		}
+
+		defer conn.Close()
+
+		endpoints = pkg.NewVerifySet(endpoints, conn)
+		http.ListenAndServe(":80", pkg.NewHTTPServer(endpoints))
+	}()
+
+	wg.Wait()
 }

@@ -7,8 +7,10 @@ import (
 	"strconv"
 
 	"github.com/go-kit/kit/auth/jwt"
+	"github.com/go-kit/kit/transport/grpc"
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/julienschmidt/httprouter"
+	"reconcip.com.br/microservices/supplier/proto"
 )
 
 func NewHTTPServer(set Set) http.Handler {
@@ -115,4 +117,56 @@ func GetUrlParamDecoder(param string) httptransport.DecodeRequestFunc {
 func encodeDeleteResponse(ctx context.Context, res http.ResponseWriter, r any) error {
 	res.WriteHeader(http.StatusNoContent)
 	return nil
+}
+
+type grpcServer struct {
+	proto.UnimplementedSupplierServiceServer
+	get grpc.Handler
+}
+
+func NewGRPCServer(endpoints Set) proto.SupplierServiceServer {
+	return &grpcServer{
+		get: grpc.NewServer(
+			endpoints.Get,
+			decodeGRPCGetRequest,
+			encodeGRPCGetResponse,
+		),
+	}
+}
+
+func (s *grpcServer) Get(ctx context.Context, req *proto.GetRequest) (*proto.Supplier, error) {
+	_, reply, err := s.get.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return reply.(*proto.Supplier), nil
+}
+
+func decodeGRPCGetRequest(ctx context.Context, req any) (any, error) {
+	request := req.(*proto.GetRequest)
+	return request.SupplierID, nil
+}
+
+func encodeGRPCGetResponse(ctx context.Context, res any) (any, error) {
+	supplier := res.(*Supplier)
+
+	return &proto.Supplier{
+		Id:         supplier.ID,
+		SocialName: supplier.SocialName,
+		LegalName:  supplier.LegalName,
+		Email:      supplier.Email,
+		Website:    supplier.Website,
+		Cnpj:       supplier.Cnpj,
+		InscEst:    supplier.InscEst,
+		Phone:      supplier.Phone,
+		Address: &proto.Address{
+			Street:       supplier.Address.Street,
+			Number:       supplier.Address.Number,
+			Complement:   supplier.Address.Complement,
+			Neighborhood: supplier.Address.Neighborhood,
+			City:         supplier.Address.City,
+			State:        supplier.Address.State,
+			Postcode:     supplier.Address.Postcode,
+		},
+	}, nil
 }
