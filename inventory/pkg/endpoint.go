@@ -2,17 +2,20 @@ package pkg
 
 import (
 	"context"
+	"math"
 
 	"github.com/go-kit/kit/endpoint"
 )
 
 type Set struct {
 	Create endpoint.Endpoint
+	List   endpoint.Endpoint
 }
 
 func NewSet(svc Service) Set {
 	return Set{
 		Create: makeCreateEndpoint(svc),
+		List:   makeListEndpoint(svc),
 	}
 }
 
@@ -21,4 +24,33 @@ func makeCreateEndpoint(svc Service) endpoint.Endpoint {
 		equipment := r.(Equipment)
 		return svc.CreateEquipment(equipment)
 	}
+}
+
+func makeListEndpoint(svc Service) endpoint.Endpoint {
+	return func(ctx context.Context, r any) (any, error) {
+		pagination := r.(Pagination)
+		equipment, total, err := svc.ListEquipment(pagination.Page, pagination.PerPage)
+		if err != nil {
+			return nil, err
+		}
+
+		items := make([]any, len(equipment))
+		for i, equip := range equipment {
+			items[i] = equip
+		}
+
+		totalPages := int(math.Max(1, math.Round(float64(total)/float64(pagination.PerPage))))
+
+		return ListResult{
+			Items:      items,
+			TotalItems: total,
+			TotalPages: totalPages,
+		}, nil
+	}
+}
+
+type ListResult struct {
+	Items      []any `json:"items"`
+	TotalItems int   `json:"total_items"`
+	TotalPages int   `json:"total_pages"`
 }

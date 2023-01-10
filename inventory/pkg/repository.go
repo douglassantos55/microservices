@@ -14,6 +14,7 @@ import (
 type Repository interface {
 	Get(string) (*Equipment, error)
 	Create(Equipment) (*Equipment, error)
+	List(page, perPage int) ([]*Equipment, int, error)
 }
 
 type mongoRepository struct {
@@ -62,4 +63,32 @@ func (r *mongoRepository) Get(id string) (*Equipment, error) {
 	err := result.Decode(&equipment)
 
 	return equipment, err
+}
+
+func (r *mongoRepository) List(page, perPage int) ([]*Equipment, int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	collection := r.database.Collection("equipment")
+
+	defer cancel()
+
+	total, err := collection.EstimatedDocumentCount(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	options := options.Find()
+	options.SetLimit(int64(perPage))
+	options.SetSkip(int64(page * perPage))
+
+	result, err := collection.Find(ctx, bson.D{}, options)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	var equipment []*Equipment
+	if err := result.All(ctx, &equipment); err != nil {
+		return nil, 0, err
+	}
+
+	return equipment, int(total), nil
 }

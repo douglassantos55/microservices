@@ -21,6 +21,7 @@ type RentingValue struct {
 
 type Service interface {
 	CreateEquipment(Equipment) (*Equipment, error)
+	ListEquipment(page, perPage int) ([]*Equipment, int, error)
 }
 
 type service struct {
@@ -37,4 +38,8 @@ func (s *service) CreateEquipment(data Equipment) (*Equipment, error) {
 		return nil, err
 	}
 	return s.repository.Create(data)
+}
+
+func (s *service) ListEquipment(page, perPage int) ([]*Equipment, int, error) {
+	return s.repository.List(page, perPage)
 }
