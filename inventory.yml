@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-deployment
+  labels:
+    app: inventory
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventory
+  template:
+    metadata:
+      labels:
+        app: inventory
+    spec:
+      containers:
+      - name: inventory
+        image: inventory:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+        env:
+        - name: AUTH_SERVICE_URL
+          value: auth-service
+        - name: MONGODB_URL
+          value: mongodb-service
+        - name: MONGODB_USER
+          value: root
+        - name: MONGODB_PASSWORD
+          value: "123"
+        - name: MONGODB_DATABASE
+          value: reconcip
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-service
+spec:
+  type: NodePort
+  selector:
+    app: inventory
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 30400
+

@@ -16,9 +16,14 @@ build:
     context: supplier
     docker:
       dockerfile: Dockerfile
+  - image: inventory
+    context: inventory
+    docker:
+      dockerfile: Dockerfile
 manifests:
   rawYaml:
   - auth.yml
   - customer.yml
   - mongodb.yml
   - supplier.yml
+  - inventory.yml
