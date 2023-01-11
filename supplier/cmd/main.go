@@ -38,7 +38,7 @@ func main() {
 	var wg sync.WaitGroup
 	wg.Add(2)
 
-	go func() {
+	go func(endpoints pkg.Set) {
 		grpcListener, err := net.Listen("tcp", ":8080")
 		if err != nil {
 			panic(err)
@@ -53,9 +53,9 @@ func main() {
 		if err := server.Serve(grpcListener); err != nil {
 			panic(err)
 		}
-	}()
+	}(endpoints)
 
-	go func() {
+	go func(endpoints pkg.Set) {
 		authServiceUrl := fmt.Sprintf("%s:8080", os.Getenv("AUTH_SERVICE_URL"))
 		conn, err := grpc.Dial(authServiceUrl, grpc.WithInsecure())
 		if err != nil {
@@ -64,9 +64,9 @@ func main() {
 
 		defer conn.Close()
 
-		endpoints = pkg.NewVerifySet(endpoints, conn)
-		http.ListenAndServe(":80", pkg.NewHTTPServer(endpoints))
-	}()
+		httpEndpoints := pkg.NewVerifySet(endpoints, conn)
+		http.ListenAndServe(":80", pkg.NewHTTPServer(httpEndpoints))
+	}(endpoints)
 
 	wg.Wait()
 }

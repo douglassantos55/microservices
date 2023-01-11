@@ -46,12 +46,12 @@ func main() {
 	var wg sync.WaitGroup
 	wg.Add(2)
 
-	go func() {
+	go func(endpoints pkg.Set) {
 		defer wg.Done()
 		http.ListenAndServe(":80", pkg.NewHTTPHandler(endpoints))
-	}()
+	}(endpoints)
 
-	go func() {
+	go func(endpoints pkg.Set) {
 		defer wg.Done()
 
 		grpcListener, err := net.Listen("tcp", ":8080")
@@ -67,7 +67,7 @@ func main() {
 		if err := server.Serve(grpcListener); err != nil {
 			panic(err)
 		}
-	}()
+	}(endpoints)
 
 	wg.Wait()
 }
