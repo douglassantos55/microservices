@@ -1,12 +1,15 @@
 package main
 
 import (
+	"net"
 	"net/http"
 	"os"
+	"sync"
 
 	"github.com/go-kit/log"
 	"google.golang.org/grpc"
 	"reconcip.com.br/microservices/inventory/pkg"
+	"reconcip.com.br/microservices/inventory/proto"
 )
 
 func main() {
@@ -40,5 +43,31 @@ func main() {
 	endpoints := pkg.NewSet(svc)
 	endpoints = pkg.FetchSupplierEndpoints(endpoints, conn)
 
-	http.ListenAndServe(":80", pkg.NewHTTPHandler(endpoints))
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		http.ListenAndServe(":80", pkg.NewHTTPHandler(endpoints))
+	}()
+
+	go func() {
+		defer wg.Done()
+
+		grpcListener, err := net.Listen("tcp", ":8080")
+		if err != nil {
+			panic(err)
+		}
+		defer grpcListener.Close()
+
+		server := grpc.NewServer()
+		grpcServer := pkg.NewGRPCServer(endpoints)
+		proto.RegisterInventoryServer(server, grpcServer)
+
+		if err := server.Serve(grpcListener); err != nil {
+			panic(err)
+		}
+	}()
+
+	wg.Wait()
 }

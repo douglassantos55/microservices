@@ -6,8 +6,10 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/go-kit/kit/transport/grpc"
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/julienschmidt/httprouter"
+	"reconcip.com.br/microservices/inventory/proto"
 )
 
 func NewHTTPHandler(endpoints Set) http.Handler {
@@ -111,4 +113,45 @@ func URLParamDecoder(param string) httptransport.DecodeRequestFunc {
 func encodeDeleteResponse(ctx context.Context, w http.ResponseWriter, r any) error {
 	w.WriteHeader(http.StatusNoContent)
 	return nil
+}
+
+type grpcServer struct {
+	proto.UnimplementedInventoryServer
+	reduceStock grpc.Handler
+}
+
+func NewGRPCServer(endpoints Set) proto.InventoryServer {
+	return &grpcServer{
+		reduceStock: grpc.NewServer(
+			endpoints.ReduceStock,
+			decodeReduceStockRequest,
+			encodeReduceStockResponse,
+		),
+	}
+}
+
+func (s *grpcServer) ReduceStock(ctx context.Context, req *proto.ReduceStockRequest) (*proto.ReduceStockReply, error) {
+	_, _, err := s.reduceStock.ServeGRPC(ctx, req)
+	if err != nil {
+		return &proto.ReduceStockReply{Err: err.Error()}, nil
+	}
+	return &proto.ReduceStockReply{}, nil
+}
+
+func decodeReduceStockRequest(ctx context.Context, req any) (any, error) {
+	item := req.(*proto.ReduceStockRequest)
+
+	return ReduceStockRequest{
+		Equip: item.GetId(),
+		Qty:   item.GetQty(),
+	}, nil
+}
+
+func encodeReduceStockResponse(ctx context.Context, res any) (any, error) {
+	return nil, nil
+}
+
+type ReduceStockRequest struct {
+	Equip string `json:"equip_id"`
+	Qty   int64  `json:"qty"`
 }

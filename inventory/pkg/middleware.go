@@ -72,3 +72,15 @@ func (l *loggingService) ListEquipment(page, perPage int) (equipment []*Equipmen
 	}()
 	return l.next.ListEquipment(page, perPage)
 }
+
+func (l *loggingService) ReduceStock(id string, qty int64) (err error) {
+	defer func() {
+		l.logger.Log(
+			"method", "ReduceStock",
+			"id", id,
+			"qty", qty,
+			"err", err,
+		)
+	}()
+	return l.next.ReduceStock(id, qty)
+}

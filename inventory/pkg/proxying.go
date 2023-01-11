@@ -15,11 +15,12 @@ func FetchSupplierEndpoints(endpoints Set, cc *grpc.ClientConn) Set {
 	fetchSuppliers := fetchSuppliersMiddleware(cc)
 
 	return Set{
-		Get:    fetchSupplier(endpoints.Get),
-		Create: fetchSupplier(endpoints.Create),
-		List:   fetchSuppliers(endpoints.List),
-		Update: fetchSupplier(endpoints.Update),
-		Delete: endpoints.Delete,
+		Get:         fetchSupplier(endpoints.Get),
+		Create:      fetchSupplier(endpoints.Create),
+		List:        fetchSuppliers(endpoints.List),
+		Update:      fetchSupplier(endpoints.Update),
+		ReduceStock: endpoints.ReduceStock,
+		Delete:      endpoints.Delete,
 	}
 }
 

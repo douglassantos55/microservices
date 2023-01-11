@@ -4,6 +4,19 @@ package proto;
 
 option go_package = "reconcip.com.br/inventory/proto";
 
+service Inventory {
+    rpc ReduceStock(ReduceStockRequest) returns (ReduceStockReply) {}
+}
+
+message ReduceStockRequest {
+    string id = 1;
+    int64 qty = 2;
+}
+
+message ReduceStockReply {
+    string err = 1;
+}
+
 // Supplier messages
 message GetRequest {
     string SupplierID = 1;

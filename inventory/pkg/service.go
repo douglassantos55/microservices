@@ -50,6 +50,7 @@ type Service interface {
 	UpdateEquipment(string, Equipment) (*Equipment, error)
 	DeleteEquipment(string) error
 	GetEquipment(string) (*Equipment, error)
+	ReduceStock(string, int64) error
 }
 
 type service struct {
@@ -127,4 +128,15 @@ func (s *service) GetEquipment(id string) (*Equipment, error) {
 		)
 	}
 	return equipment, nil
+}
+
+func (s *service) ReduceStock(id string, qty int64) error {
+	equipment, err := s.repository.Get(id)
+
+	if err == nil {
+		equipment.EffectiveStock -= int(qty)
+		_, err = s.repository.Update(id, *equipment)
+	}
+
+	return err
 }
