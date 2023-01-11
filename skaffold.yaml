@@ -20,6 +20,10 @@ build:
     context: inventory
     docker:
       dockerfile: Dockerfile
+  - image: delivery
+    context: delivery
+    docker:
+      dockerfile: Dockerfile
 manifests:
   rawYaml:
   - auth.yml
@@ -27,3 +31,4 @@ manifests:
   - mongodb.yml
   - supplier.yml
   - inventory.yml
+  - delivery.yml
