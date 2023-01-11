@@ -49,6 +49,7 @@ type Service interface {
 	ListEquipment(page, perPage int) ([]*Equipment, int, error)
 	UpdateEquipment(string, Equipment) (*Equipment, error)
 	DeleteEquipment(string) error
+	GetEquipment(string) (*Equipment, error)
 }
 
 type service struct {
@@ -114,4 +115,16 @@ func (s *service) DeleteEquipment(id string) error {
 	}
 
 	return nil
+}
+
+func (s *service) GetEquipment(id string) (*Equipment, error) {
+	equipment, err := s.repository.Get(id)
+	if err != nil {
+		return nil, NewError(
+			http.StatusNotFound,
+			"equipment not found",
+			"could not find the equipment you're looking for",
+		)
+	}
+	return equipment, nil
 }

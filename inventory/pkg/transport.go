@@ -33,8 +33,14 @@ func NewHTTPHandler(endpoints Set) http.Handler {
 
 	router.Handler(http.MethodDelete, "/:id", httptransport.NewServer(
 		endpoints.Delete,
-		decodeDeleteRequest,
+		URLParamDecoder("id"),
 		encodeDeleteResponse,
+	))
+
+	router.Handler(http.MethodGet, "/:id", httptransport.NewServer(
+		endpoints.Get,
+		URLParamDecoder("id"),
+		httptransport.EncodeJSONResponse,
 	))
 
 	return router
@@ -95,9 +101,11 @@ type UpdateRequest struct {
 	Data Equipment `json:"data"`
 }
 
-func decodeDeleteRequest(ctx context.Context, r *http.Request) (any, error) {
-	params := httprouter.ParamsFromContext(r.Context())
-	return params.ByName("id"), nil
+func URLParamDecoder(param string) httptransport.DecodeRequestFunc {
+	return func(ctx context.Context, r *http.Request) (any, error) {
+		params := httprouter.ParamsFromContext(r.Context())
+		return params.ByName(param), nil
+	}
 }
 
 func encodeDeleteResponse(ctx context.Context, w http.ResponseWriter, r any) error {

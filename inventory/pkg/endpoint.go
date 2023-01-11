@@ -8,6 +8,7 @@ import (
 )
 
 type Set struct {
+	Get    endpoint.Endpoint
 	Create endpoint.Endpoint
 	List   endpoint.Endpoint
 	Update endpoint.Endpoint
@@ -16,6 +17,7 @@ type Set struct {
 
 func NewSet(svc Service) Set {
 	return Set{
+		Get:    makeGetEndpoint(svc),
 		Create: makeCreateEndpoint(svc),
 		List:   makeListEndpoint(svc),
 		Update: makeUpdateEndpoint(svc),
@@ -72,3 +74,8 @@ func makeDeleteEndpoint(svc Service) endpoint.Endpoint {
 	}
 }
 
+func makeGetEndpoint(svc Service) endpoint.Endpoint {
+	return func(ctx context.Context, r any) (any, error) {
+		return svc.GetEquipment(r.(string))
+	}
+}
