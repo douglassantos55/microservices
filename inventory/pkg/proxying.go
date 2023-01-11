@@ -18,6 +18,7 @@ func FetchSupplierEndpoints(endpoints Set, cc *grpc.ClientConn) Set {
 		Create: fetchSupplier(endpoints.Create),
 		List:   fetchSuppliers(endpoints.List),
 		Update: fetchSupplier(endpoints.Update),
+		Delete: endpoints.Delete,
 	}
 }
 

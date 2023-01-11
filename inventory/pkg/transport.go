@@ -31,6 +31,12 @@ func NewHTTPHandler(endpoints Set) http.Handler {
 		httptransport.EncodeJSONResponse,
 	))
 
+	router.Handler(http.MethodDelete, "/:id", httptransport.NewServer(
+		endpoints.Delete,
+		decodeDeleteRequest,
+		encodeDeleteResponse,
+	))
+
 	return router
 }
 
@@ -87,4 +93,14 @@ func decodeUpdateRequest(ctx context.Context, r *http.Request) (any, error) {
 type UpdateRequest struct {
 	ID   string    `json:"id"`
 	Data Equipment `json:"data"`
+}
+
+func decodeDeleteRequest(ctx context.Context, r *http.Request) (any, error) {
+	params := httprouter.ParamsFromContext(r.Context())
+	return params.ByName("id"), nil
+}
+
+func encodeDeleteResponse(ctx context.Context, w http.ResponseWriter, r any) error {
+	w.WriteHeader(http.StatusNoContent)
+	return nil
 }

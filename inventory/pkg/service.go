@@ -48,6 +48,7 @@ type Service interface {
 	CreateEquipment(Equipment) (*Equipment, error)
 	ListEquipment(page, perPage int) ([]*Equipment, int, error)
 	UpdateEquipment(string, Equipment) (*Equipment, error)
+	DeleteEquipment(string) error
 }
 
 type service struct {
@@ -93,4 +94,24 @@ func (s *service) UpdateEquipment(id string, data Equipment) (*Equipment, error)
 	}
 
 	return equipment, nil
+}
+
+func (s *service) DeleteEquipment(id string) error {
+	if _, err := s.repository.Get(id); err != nil {
+		return NewError(
+			http.StatusNotFound,
+			"equipment not found",
+			"could not find the equipment you're trying to delete",
+		)
+	}
+
+	if err := s.repository.Delete(id); err != nil {
+		return NewError(
+			http.StatusInternalServerError,
+			"error deleting equipment",
+			"something went wrong while deleting equipment",
+		)
+	}
+
+	return nil
 }
