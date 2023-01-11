@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/go-kit/log"
 	"google.golang.org/grpc"
 	"reconcip.com.br/microservices/inventory/pkg"
 )
@@ -29,7 +30,14 @@ func main() {
 
 	defer conn.Close()
 
-	endpoints := pkg.NewSet(pkg.NewService(validator, repository))
+	logger := log.NewJSONLogger(log.NewSyncWriter(os.Stderr))
+	logger = log.WithPrefix(logger, "ts", log.DefaultTimestamp)
+	logger = log.WithPrefix(logger, "caller", log.DefaultCaller)
+
+	svc := pkg.NewService(validator, repository)
+	svc = pkg.NewLoggingService(svc, logger)
+
+	endpoints := pkg.NewSet(svc)
 	endpoints = pkg.FetchSupplierEndpoints(endpoints, conn)
 
 	http.ListenAndServe(":80", pkg.NewHTTPHandler(endpoints))
