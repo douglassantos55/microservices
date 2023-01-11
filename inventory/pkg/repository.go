@@ -15,6 +15,7 @@ type Repository interface {
 	Get(string) (*Equipment, error)
 	Create(Equipment) (*Equipment, error)
 	List(page, perPage int) ([]*Equipment, int, error)
+	Update(string, Equipment) (*Equipment, error)
 }
 
 type mongoRepository struct {
@@ -91,4 +92,18 @@ func (r *mongoRepository) List(page, perPage int) ([]*Equipment, int, error) {
 	}
 
 	return equipment, int(total), nil
+}
+
+func (r *mongoRepository) Update(id string, data Equipment) (*Equipment, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	collection := r.database.Collection("equipment")
+
+	defer cancel()
+
+	_, err := collection.ReplaceOne(ctx, bson.M{"_id": id}, data)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.Get(id)
 }

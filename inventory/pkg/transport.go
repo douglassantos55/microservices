@@ -25,6 +25,12 @@ func NewHTTPHandler(endpoints Set) http.Handler {
 		httptransport.EncodeJSONResponse,
 	))
 
+	router.Handler(http.MethodPut, "/:id", httptransport.NewServer(
+		endpoints.Update,
+		decodeUpdateRequest,
+		httptransport.EncodeJSONResponse,
+	))
+
 	return router
 }
 
@@ -58,4 +64,27 @@ func decodeListRequest(ctx context.Context, r *http.Request) (any, error) {
 type Pagination struct {
 	Page    int `json:"page"`
 	PerPage int `json:"per_page"`
+}
+
+func decodeUpdateRequest(ctx context.Context, r *http.Request) (any, error) {
+	params := httprouter.ParamsFromContext(r.Context())
+
+	var equipment Equipment
+	if err := json.NewDecoder(r.Body).Decode(&equipment); err != nil {
+		return nil, NewError(
+			http.StatusBadRequest,
+			"invalid input data",
+			"verify your input data and try again",
+		)
+	}
+
+	return UpdateRequest{
+		ID:   params.ByName("id"),
+		Data: equipment,
+	}, nil
+}
+
+type UpdateRequest struct {
+	ID   string    `json:"id"`
+	Data Equipment `json:"data"`
 }

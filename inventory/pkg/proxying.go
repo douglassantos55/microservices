@@ -17,6 +17,7 @@ func FetchSupplierEndpoints(endpoints Set, cc *grpc.ClientConn) Set {
 	return Set{
 		Create: fetchSupplier(endpoints.Create),
 		List:   fetchSuppliers(endpoints.List),
+		Update: fetchSupplier(endpoints.Update),
 	}
 }
 
@@ -32,11 +33,10 @@ func fetchSupplierMiddleware(cc *grpc.ClientConn) endpoint.Middleware {
 
 			equipment := response.(*Equipment)
 			supplier, err := fetchSupplier(ctx, equipment.SupplierID)
-			if err != nil {
-				return nil, err
+			if err == nil {
+				equipment.Supplier = supplier.(*Supplier)
 			}
 
-			equipment.Supplier = supplier.(*Supplier)
 			return equipment, nil
 		}
 	}
@@ -56,10 +56,9 @@ func fetchSuppliersMiddleware(cc *grpc.ClientConn) endpoint.Middleware {
 			for _, item := range result.Items {
 				equipment := item.(*Equipment)
 				supplier, err := fetchSupplier(ctx, equipment.SupplierID)
-				if err != nil {
-					return nil, err
+				if err == nil {
+					equipment.Supplier = supplier.(*Supplier)
 				}
-				equipment.Supplier = supplier.(*Supplier)
 			}
 
 			return result, nil

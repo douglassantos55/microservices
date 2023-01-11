@@ -1,5 +1,7 @@
 package pkg
 
+import "net/http"
+
 type Equipment struct {
 	ID             string         `json:"id" bson:"_id,omitempty" validate:"omitempty,required"`
 	Description    string         `json:"description" validate:"required"`
@@ -45,6 +47,7 @@ type RentingValue struct {
 type Service interface {
 	CreateEquipment(Equipment) (*Equipment, error)
 	ListEquipment(page, perPage int) ([]*Equipment, int, error)
+	UpdateEquipment(string, Equipment) (*Equipment, error)
 }
 
 type service struct {
@@ -65,4 +68,29 @@ func (s *service) CreateEquipment(data Equipment) (*Equipment, error) {
 
 func (s *service) ListEquipment(page, perPage int) ([]*Equipment, int, error) {
 	return s.repository.List(page, perPage)
+}
+
+func (s *service) UpdateEquipment(id string, data Equipment) (*Equipment, error) {
+	if _, err := s.repository.Get(id); err != nil {
+		return nil, NewError(
+			http.StatusNotFound,
+			"equipment not found",
+			"could not find the equipment you're trying to edit",
+		)
+	}
+
+	if err := s.validator.Validate(data); err != nil {
+		return nil, err
+	}
+
+	equipment, err := s.repository.Update(id, data)
+	if err != nil {
+		return nil, NewError(
+			http.StatusInternalServerError,
+			"error updating equipment",
+			"something went wrong while updating equipment",
+		)
+	}
+
+	return equipment, nil
 }
