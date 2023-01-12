@@ -26,7 +26,7 @@ spec:
         env:
         - name: AUTH_SERVICE_URL
           value: auth-service
-        - name: SUPPLIER_URL
+        - name: SUPPLIER_SERVICE_URL
           value: supplier-service
         - name: MONGODB_URL
           value: mongodb-service

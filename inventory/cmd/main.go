@@ -25,7 +25,7 @@ func main() {
 		panic(err)
 	}
 
-	supplierUrl := os.Getenv("SUPPLIER_URL")
+	supplierUrl := os.Getenv("SUPPLIER_SERVICE_URL")
 	conn, err := grpc.Dial(supplierUrl+":8080", grpc.WithInsecure())
 	if err != nil {
 		panic(err)
@@ -48,7 +48,17 @@ func main() {
 
 	go func(endpoints pkg.Set) {
 		defer wg.Done()
-		http.ListenAndServe(":80", pkg.NewHTTPHandler(endpoints))
+
+		authUrl := os.Getenv("AUTH_SERVICE_URL")
+		conn, err := grpc.Dial(authUrl+":8080", grpc.WithInsecure())
+		if err != nil {
+			panic(err)
+		}
+
+		defer conn.Close()
+
+		authEndpoints := pkg.CreateAuthEndpoints(endpoints, conn)
+		http.ListenAndServe(":80", pkg.NewHTTPHandler(authEndpoints))
 	}(endpoints)
 
 	go func(endpoints pkg.Set) {

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/go-kit/kit/auth/jwt"
 	"github.com/go-kit/kit/transport/grpc"
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/julienschmidt/httprouter"
@@ -15,34 +16,43 @@ import (
 func NewHTTPHandler(endpoints Set) http.Handler {
 	router := httprouter.New()
 
+	options := []httptransport.ServerOption{
+		httptransport.ServerBefore(jwt.HTTPToContext()),
+	}
+
 	router.Handler(http.MethodPost, "/", httptransport.NewServer(
 		endpoints.Create,
 		decodeCreateRequest,
 		httptransport.EncodeJSONResponse,
+		options...,
 	))
 
 	router.Handler(http.MethodGet, "/", httptransport.NewServer(
 		endpoints.List,
 		decodeListRequest,
 		httptransport.EncodeJSONResponse,
+		options...,
 	))
 
 	router.Handler(http.MethodPut, "/:id", httptransport.NewServer(
 		endpoints.Update,
 		decodeUpdateRequest,
 		httptransport.EncodeJSONResponse,
+		options...,
 	))
 
 	router.Handler(http.MethodDelete, "/:id", httptransport.NewServer(
 		endpoints.Delete,
 		URLParamDecoder("id"),
 		encodeDeleteResponse,
+		options...,
 	))
 
 	router.Handler(http.MethodGet, "/:id", httptransport.NewServer(
 		endpoints.Get,
 		URLParamDecoder("id"),
 		httptransport.EncodeJSONResponse,
+		options...,
 	))
 
 	return router
