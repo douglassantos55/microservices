@@ -13,6 +13,7 @@ import (
 )
 
 type Carrier interface {
+	String() string
 	GetQuote(origin, destination string, items []Item) (*Quote, error)
 }
 
@@ -122,4 +123,8 @@ func (c *localCarrier) GetCoordinates(address string) (*coordinates, error) {
 	}
 
 	return coordinates[0], nil
+}
+
+func (c *localCarrier) String() string {
+	return c.name
 }
