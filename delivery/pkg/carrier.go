@@ -72,7 +72,7 @@ func (c *localCarrier) GetRoutes(origin, dest string) ([]Route, error) {
 		return nil, err
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
 	format := "https://www.mapeia.com.br/route/v1/driving/%s;%s?overview=false&alternatives=true&steps=false&hints=;"
@@ -99,7 +99,7 @@ func (c *localCarrier) GetCoordinates(address string) (*coordinates, error) {
 		return nil, errors.New("empty address")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
 	format := "https://www.mapeia.com.br/search?q=%s&addressdetails=1&namedetails=1&accept-language=pt-BR&countrycodes=br&format=jsonv2&limit=20"
