@@ -24,6 +24,10 @@ build:
     context: delivery
     docker:
       dockerfile: Dockerfile
+  - image: payment
+    context: payment
+    docker:
+      dockerfile: Dockerfile
 manifests:
   rawYaml:
   - auth.yml
@@ -32,3 +36,4 @@ manifests:
   - supplier.yml
   - inventory.yml
   - delivery.yml
+  - payment.yml
