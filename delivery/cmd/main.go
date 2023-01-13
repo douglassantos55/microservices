@@ -10,7 +10,7 @@ import (
 
 func main() {
 	svc := pkg.NewService([]pkg.Carrier{
-		pkg.NewLocalCarrier(5, 7),
+		pkg.NewLocalCarrier(5, 7, pkg.NewMapeiaRouter(), pkg.NewMapeiaCoordinator()),
 	})
 
 	grpcListener, err := net.Listen("tcp", ":8080")

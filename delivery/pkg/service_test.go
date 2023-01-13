@@ -9,8 +9,11 @@ import (
 func TestService(t *testing.T) {
 	t.Run("GetQuotes", func(t *testing.T) {
 		t.Run("success", func(t *testing.T) {
+			router := &fakeRouter{}
+			coordinator := &fakeCoordinator{}
+
 			svc := pkg.NewService([]pkg.Carrier{
-				pkg.NewLocalCarrier(5, 12),
+				pkg.NewLocalCarrier(5, 12, router, coordinator),
 			})
 
 			origin := "rua monte alegre do sul, mogi guaçu, São Paulo, SP"
@@ -32,7 +35,7 @@ func TestService(t *testing.T) {
 				t.Errorf("expected carrier local, got %v", quotes[0].Carrier)
 			}
 
-			expectedValue := 117.38
+			expectedValue := 4.79
 			if quotes[0].Value != expectedValue {
 				t.Errorf("expected value %v, got %v", expectedValue, quotes[0].Value)
 			}
