@@ -14,6 +14,7 @@ import (
 type Repository interface {
 	GetPaymentMethod(string) (*PaymentMethod, error)
 	CreatePaymentMethod(PaymentMethod) (*PaymentMethod, error)
+	ListPaymentMethods() ([]*PaymentMethod, error)
 }
 
 type mongoRepository struct {
@@ -65,4 +66,23 @@ func (r *mongoRepository) GetPaymentMethod(id string) (*PaymentMethod, error) {
 	}
 
 	return method, nil
+}
+
+func (r *mongoRepository) ListPaymentMethods() ([]*PaymentMethod, error) {
+	collection := r.database.Collection("payment_methods")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+
+	defer cancel()
+
+	cursor, err := collection.Find(ctx, bson.D{})
+	if err != nil {
+		return nil, err
+	}
+
+	var methods []*PaymentMethod
+	if err := cursor.All(ctx, &methods); err != nil {
+		return nil, err
+	}
+
+	return methods, nil
 }

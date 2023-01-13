@@ -18,6 +18,12 @@ func NewHTTPHandler(endpoints Set) http.Handler {
 		httptransport.EncodeJSONResponse,
 	))
 
+	router.Handler(http.MethodGet, "/", httptransport.NewServer(
+		endpoints.ListPaymentMethods,
+		httptransport.NopRequestDecoder,
+		httptransport.EncodeJSONResponse,
+	))
+
 	return router
 }
 

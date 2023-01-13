@@ -10,6 +10,7 @@ type PaymentMethod struct {
 
 type Service interface {
 	CreatePaymentMethod(PaymentMethod) (*PaymentMethod, error)
+	ListPaymentMethods() ([]*PaymentMethod, error)
 }
 
 type service struct {
@@ -17,7 +18,7 @@ type service struct {
 	repository Repository
 }
 
-func NewService(validator Validator, repository Repository) *service {
+func NewService(validator Validator, repository Repository) Service {
 	return &service{validator, repository}
 }
 
@@ -36,4 +37,8 @@ func (s *service) CreatePaymentMethod(data PaymentMethod) (*PaymentMethod, error
 	}
 
 	return method, nil
+}
+
+func (s *service) ListPaymentMethods() ([]*PaymentMethod, error) {
+	return s.repository.ListPaymentMethods()
 }
