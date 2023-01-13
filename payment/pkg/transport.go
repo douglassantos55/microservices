@@ -24,6 +24,12 @@ func NewHTTPHandler(endpoints Set) http.Handler {
 		httptransport.EncodeJSONResponse,
 	))
 
+	router.Handler(http.MethodPut, "/:id", httptransport.NewServer(
+		endpoints.UpdatePaymentMethod,
+		decodeUpdatePaymentMethodRequest,
+		httptransport.EncodeJSONResponse,
+	))
+
 	return router
 }
 
@@ -39,4 +45,27 @@ func decodeCreatePaymentMethodRequest(ctx context.Context, r *http.Request) (any
 	}
 
 	return method, nil
+}
+
+func decodeUpdatePaymentMethodRequest(ctx context.Context, r *http.Request) (any, error) {
+	params := httprouter.ParamsFromContext(r.Context())
+
+	var method PaymentMethod
+	if err := json.NewDecoder(r.Body).Decode(&method); err != nil {
+		return nil, NewError(
+			http.StatusBadRequest,
+			"invalid input data",
+			"verify your input and try again",
+		)
+	}
+
+	return UpdatePaymentMethodRequest{
+		ID:   params.ByName("id"),
+		Data: method,
+	}, nil
+}
+
+type UpdatePaymentMethodRequest struct {
+	ID   string
+	Data PaymentMethod
 }

@@ -11,6 +11,7 @@ type PaymentMethod struct {
 type Service interface {
 	CreatePaymentMethod(PaymentMethod) (*PaymentMethod, error)
 	ListPaymentMethods() ([]*PaymentMethod, error)
+	UpdatePaymentMethod(string, PaymentMethod) (*PaymentMethod, error)
 }
 
 type service struct {
@@ -37,6 +38,23 @@ func (s *service) CreatePaymentMethod(data PaymentMethod) (*PaymentMethod, error
 	}
 
 	return method, nil
+}
+
+func (s *service) UpdatePaymentMethod(id string, data PaymentMethod) (*PaymentMethod, error) {
+	if err := s.validator.Validate(data); err != nil {
+		return nil, err
+	}
+
+	method, err := s.repository.UpdatePaymentMethod(id, data)
+	if err != nil {
+		return nil, NewError(
+			http.StatusInternalServerError,
+			"error updating payment method",
+			"something went wrong updating payment method",
+		)
+	}
+
+	return method, err
 }
 
 func (s *service) ListPaymentMethods() ([]*PaymentMethod, error) {
