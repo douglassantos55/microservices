@@ -30,6 +30,12 @@ func NewHTTPHandler(endpoints Set) http.Handler {
 		httptransport.EncodeJSONResponse,
 	))
 
+	router.Handler(http.MethodDelete, "/:id", httptransport.NewServer(
+		endpoints.DeletePaymentMethod,
+		decodeDeletePaymentMethodRequest,
+		encodeDeleteResponse,
+	))
+
 	return router
 }
 
@@ -68,4 +74,14 @@ func decodeUpdatePaymentMethodRequest(ctx context.Context, r *http.Request) (any
 type UpdatePaymentMethodRequest struct {
 	ID   string
 	Data PaymentMethod
+}
+
+func decodeDeletePaymentMethodRequest(ctx context.Context, r *http.Request) (any, error) {
+	params := httprouter.ParamsFromContext(r.Context())
+	return params.ByName("id"), nil
+}
+
+func encodeDeleteResponse(ctx context.Context, r http.ResponseWriter, res any) error {
+	r.WriteHeader(http.StatusNoContent)
+    return nil
 }
