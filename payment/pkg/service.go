@@ -13,6 +13,7 @@ type Service interface {
 	ListPaymentMethods() ([]*PaymentMethod, error)
 	UpdatePaymentMethod(string, PaymentMethod) (*PaymentMethod, error)
 	DeletePaymentMethod(string) error
+	GetPaymentMethod(string) (*PaymentMethod, error)
 }
 
 type service struct {
@@ -74,10 +75,22 @@ func (s *service) DeletePaymentMethod(id string) error {
 	if err := s.repository.DeletePaymentMethod(id); err != nil {
 		return NewError(
 			http.StatusInternalServerError,
-			"error deleting equipment",
-			"something went wrong while deleting equipment",
+			"error deleting payment method",
+			"something went wrong while deleting payment method",
 		)
 	}
 
 	return nil
+}
+
+func (s *service) GetPaymentMethod(id string) (*PaymentMethod, error) {
+	method, err := s.repository.GetPaymentMethod(id)
+	if err != nil {
+		return nil, NewError(
+			http.StatusNotFound,
+			"payment method not found",
+			"could not find payment method",
+		)
+	}
+	return method, nil
 }
