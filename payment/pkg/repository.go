@@ -17,6 +17,9 @@ type Repository interface {
 	ListPaymentMethods() ([]*PaymentMethod, error)
 	UpdatePaymentMethod(string, PaymentMethod) (*PaymentMethod, error)
 	DeletePaymentMethod(string) error
+
+	CreatePaymentType(PaymentType) (*PaymentType, error)
+	GetPaymentType(string) (*PaymentType, error)
 }
 
 type mongoRepository struct {
@@ -111,4 +114,33 @@ func (r *mongoRepository) DeletePaymentMethod(id string) error {
 	_, err := collection.DeleteOne(ctx, bson.M{"_id": id})
 
 	return err
+}
+
+func (r *mongoRepository) CreatePaymentType(data PaymentType) (*PaymentType, error) {
+	collection := r.database.Collection("payment_types")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+
+	defer cancel()
+
+	data.ID = primitive.NewObjectID().Hex()
+	result, err := collection.InsertOne(ctx, data)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return r.GetPaymentType(result.InsertedID.(string))
+}
+
+func (r *mongoRepository) GetPaymentType(id string) (*PaymentType, error) {
+	collection := r.database.Collection("payment_types")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+
+	defer cancel()
+	result := collection.FindOne(ctx, bson.M{"_id": id})
+
+	var paymentType *PaymentType
+	err := result.Decode(&paymentType)
+
+	return paymentType, err
 }

@@ -12,37 +12,42 @@ import (
 func NewHTTPHandler(endpoints Set) http.Handler {
 	router := httprouter.New()
 
-	router.Handler(http.MethodPost, "/", httptransport.NewServer(
+	makePaymentMethodRoutes("/methods", router, endpoints)
+	makePaymentTypeRoutes("/types", router, endpoints)
+
+	return router
+}
+
+func makePaymentMethodRoutes(prefix string, router *httprouter.Router, endpoints Set) {
+	router.Handler(http.MethodPost, prefix+"/", httptransport.NewServer(
 		endpoints.CreatePaymentMethod,
 		decodeCreatePaymentMethodRequest,
 		httptransport.EncodeJSONResponse,
 	))
 
-	router.Handler(http.MethodGet, "/", httptransport.NewServer(
+	router.Handler(http.MethodGet, prefix+"/", httptransport.NewServer(
 		endpoints.ListPaymentMethods,
 		httptransport.NopRequestDecoder,
 		httptransport.EncodeJSONResponse,
 	))
 
-	router.Handler(http.MethodPut, "/:id", httptransport.NewServer(
+	router.Handler(http.MethodPut, prefix+"/:id", httptransport.NewServer(
 		endpoints.UpdatePaymentMethod,
 		decodeUpdatePaymentMethodRequest,
 		httptransport.EncodeJSONResponse,
 	))
 
-	router.Handler(http.MethodDelete, "/:id", httptransport.NewServer(
+	router.Handler(http.MethodDelete, prefix+"/:id", httptransport.NewServer(
 		endpoints.DeletePaymentMethod,
 		GetRouteParamDecoder("id"),
 		encodeDeleteResponse,
 	))
 
-	router.Handler(http.MethodGet, "/:id", httptransport.NewServer(
+	router.Handler(http.MethodGet, prefix+"/:id", httptransport.NewServer(
 		endpoints.GetPaymentMethod,
 		GetRouteParamDecoder("id"),
 		httptransport.EncodeJSONResponse,
 	))
-
-	return router
 }
 
 func decodeCreatePaymentMethodRequest(ctx context.Context, r *http.Request) (any, error) {
@@ -92,4 +97,24 @@ func GetRouteParamDecoder(param string) httptransport.DecodeRequestFunc {
 func encodeDeleteResponse(ctx context.Context, r http.ResponseWriter, res any) error {
 	r.WriteHeader(http.StatusNoContent)
 	return nil
+}
+
+func makePaymentTypeRoutes(prefix string, router *httprouter.Router, endpoints Set) {
+	router.Handler(http.MethodPost, prefix+"/", httptransport.NewServer(
+		endpoints.CreatePaymentType,
+		decodeCreatePaymentTypeRequest,
+		httptransport.EncodeJSONResponse,
+	))
+}
+
+func decodeCreatePaymentTypeRequest(ctx context.Context, r *http.Request) (any, error) {
+	var paymentType PaymentType
+	if err := json.NewDecoder(r.Body).Decode(&paymentType); err != nil {
+		return nil, NewError(
+			http.StatusBadRequest,
+			"invalid input data",
+			"verify your input and try again",
+		)
+	}
+	return paymentType, nil
 }

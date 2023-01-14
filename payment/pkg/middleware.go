@@ -69,3 +69,15 @@ func (l *loggingService) DeletePaymentMethod(id string) (err error) {
 	}()
 	return l.next.DeletePaymentMethod(id)
 }
+
+func (l *loggingService) CreatePaymentType(data PaymentType) (paymentType *PaymentType, err error) {
+	defer func() {
+		l.logger.Log(
+			"method", "CreatePaymentType",
+			"data", data,
+			"paymentType", paymentType,
+			"err", err,
+		)
+	}()
+	return l.next.CreatePaymentType(data)
+}

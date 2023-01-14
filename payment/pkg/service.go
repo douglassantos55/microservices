@@ -8,12 +8,19 @@ type PaymentMethod struct {
 	AccountID string `json:"account_id" validate:"required"`
 }
 
+type PaymentType struct {
+	ID   string `json:"id,omitempty" bson:"_id,omitempty"`
+	Name string `json:"name" validate:"required"`
+}
+
 type Service interface {
 	CreatePaymentMethod(PaymentMethod) (*PaymentMethod, error)
 	ListPaymentMethods() ([]*PaymentMethod, error)
 	UpdatePaymentMethod(string, PaymentMethod) (*PaymentMethod, error)
 	DeletePaymentMethod(string) error
 	GetPaymentMethod(string) (*PaymentMethod, error)
+
+	CreatePaymentType(PaymentType) (*PaymentType, error)
 }
 
 type service struct {
@@ -93,4 +100,21 @@ func (s *service) GetPaymentMethod(id string) (*PaymentMethod, error) {
 		)
 	}
 	return method, nil
+}
+
+func (s *service) CreatePaymentType(data PaymentType) (*PaymentType, error) {
+	if err := s.validator.Validate(data); err != nil {
+		return nil, err
+	}
+
+	paymentType, err := s.repository.CreatePaymentType(data)
+	if err != nil {
+		return nil, NewError(
+			http.StatusInternalServerError,
+			"error creating payment type",
+			"could not create payment type due to an error",
+		)
+	}
+
+	return paymentType, nil
 }
