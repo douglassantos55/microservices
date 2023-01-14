@@ -21,6 +21,7 @@ type Repository interface {
 	CreatePaymentType(PaymentType) (*PaymentType, error)
 	GetPaymentType(string) (*PaymentType, error)
 	ListPaymentTypes() ([]*PaymentType, error)
+	UpdatePaymentType(string, PaymentType) (*PaymentType, error)
 }
 
 type mongoRepository struct {
@@ -167,4 +168,18 @@ func (r *mongoRepository) ListPaymentTypes() ([]*PaymentType, error) {
 	}
 
 	return paymentTypes, nil
+}
+
+func (r *mongoRepository) UpdatePaymentType(id string, data PaymentType) (*PaymentType, error) {
+	collection := r.database.Collection("payment_types")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+
+	defer cancel()
+
+	_, err := collection.ReplaceOne(ctx, bson.M{"_id": id}, data)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.GetPaymentType(id)
 }

@@ -111,6 +111,12 @@ func makePaymentTypeRoutes(prefix string, router *httprouter.Router, endpoints S
 		httptransport.NopRequestDecoder,
 		httptransport.EncodeJSONResponse,
 	))
+
+	router.Handler(http.MethodPut, prefix+"/:id", httptransport.NewServer(
+		endpoints.UpdatePaymentType,
+		decodeUpdatePaymentTypeRequest,
+		httptransport.EncodeJSONResponse,
+	))
 }
 
 func decodeCreatePaymentTypeRequest(ctx context.Context, r *http.Request) (any, error) {
@@ -123,4 +129,27 @@ func decodeCreatePaymentTypeRequest(ctx context.Context, r *http.Request) (any, 
 		)
 	}
 	return paymentType, nil
+}
+
+func decodeUpdatePaymentTypeRequest(ctx context.Context, r *http.Request) (any, error) {
+	params := httprouter.ParamsFromContext(r.Context())
+
+	var method PaymentType
+	if err := json.NewDecoder(r.Body).Decode(&method); err != nil {
+		return nil, NewError(
+			http.StatusBadRequest,
+			"invalid input data",
+			"verify your input and try again",
+		)
+	}
+
+	return UpdatePaymentTypeRequest{
+		ID:   params.ByName("id"),
+		Data: method,
+	}, nil
+}
+
+type UpdatePaymentTypeRequest struct {
+	ID   string
+	Data PaymentType
 }
