@@ -81,3 +81,14 @@ func (l *loggingService) CreatePaymentType(data PaymentType) (paymentType *Payme
 	}()
 	return l.next.CreatePaymentType(data)
 }
+
+func (l *loggingService) ListPaymentTypes() (types []*PaymentType, err error) {
+	defer func() {
+		l.logger.Log(
+			"method", "ListPaymentTypes",
+			"types", types,
+			"err", err,
+		)
+	}()
+	return l.next.ListPaymentTypes()
+}

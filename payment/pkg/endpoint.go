@@ -14,6 +14,7 @@ type Set struct {
 	GetPaymentMethod    endpoint.Endpoint
 
 	CreatePaymentType endpoint.Endpoint
+	ListPaymentTypes  endpoint.Endpoint
 }
 
 func CreateEndpoints(svc Service) Set {
@@ -25,6 +26,7 @@ func CreateEndpoints(svc Service) Set {
 		GetPaymentMethod:    makeGetPaymentMethodEndpoint(svc),
 
 		CreatePaymentType: makeCreatePaymentTypeEndpoint(svc),
+		ListPaymentTypes:  makeListPaymentTypesEndpoint(svc),
 	}
 }
 
@@ -64,5 +66,11 @@ func makeCreatePaymentTypeEndpoint(svc Service) endpoint.Endpoint {
 	return func(ctx context.Context, r any) (any, error) {
 		data := r.(PaymentType)
 		return svc.CreatePaymentType(data)
+	}
+}
+
+func makeListPaymentTypesEndpoint(svc Service) endpoint.Endpoint {
+	return func(ctx context.Context, r any) (any, error) {
+		return svc.ListPaymentTypes()
 	}
 }

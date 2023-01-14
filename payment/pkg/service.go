@@ -21,6 +21,7 @@ type Service interface {
 	GetPaymentMethod(string) (*PaymentMethod, error)
 
 	CreatePaymentType(PaymentType) (*PaymentType, error)
+	ListPaymentTypes() ([]*PaymentType, error)
 }
 
 type service struct {
@@ -117,4 +118,8 @@ func (s *service) CreatePaymentType(data PaymentType) (*PaymentType, error) {
 	}
 
 	return paymentType, nil
+}
+
+func (s *service) ListPaymentTypes() ([]*PaymentType, error) {
+	return s.repository.ListPaymentTypes()
 }
