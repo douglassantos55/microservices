@@ -22,6 +22,7 @@ type Repository interface {
 	GetPaymentType(string) (*PaymentType, error)
 	ListPaymentTypes() ([]*PaymentType, error)
 	UpdatePaymentType(string, PaymentType) (*PaymentType, error)
+	DeletePaymentType(string) error
 }
 
 type mongoRepository struct {
@@ -182,4 +183,14 @@ func (r *mongoRepository) UpdatePaymentType(id string, data PaymentType) (*Payme
 	}
 
 	return r.GetPaymentType(id)
+}
+
+func (r *mongoRepository) DeletePaymentType(id string) error {
+	collection := r.database.Collection("payment_types")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+
+	defer cancel()
+	_, err := collection.DeleteOne(ctx, bson.M{"_id": id})
+
+	return err
 }

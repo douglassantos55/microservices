@@ -23,6 +23,7 @@ type Service interface {
 	CreatePaymentType(PaymentType) (*PaymentType, error)
 	ListPaymentTypes() ([]*PaymentType, error)
 	UpdatePaymentType(string, PaymentType) (*PaymentType, error)
+	DeletePaymentType(string) error
 }
 
 type service struct {
@@ -140,4 +141,24 @@ func (s *service) UpdatePaymentType(id string, data PaymentType) (*PaymentType, 
 	}
 
 	return method, err
+}
+
+func (s *service) DeletePaymentType(id string) error {
+	if _, err := s.repository.GetPaymentType(id); err != nil {
+		return NewError(
+			http.StatusNotFound,
+			"payment type not found",
+			"could not find the payment type you're trying to delete",
+		)
+	}
+
+	if err := s.repository.DeletePaymentType(id); err != nil {
+		return NewError(
+			http.StatusInternalServerError,
+			"error deleting payment type",
+			"something went wrong while deleting payment type",
+		)
+	}
+
+	return nil
 }
