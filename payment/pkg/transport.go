@@ -123,6 +123,12 @@ func makePaymentTypeRoutes(prefix string, router *httprouter.Router, endpoints S
 		GetRouteParamDecoder("id"),
 		encodeDeleteResponse,
 	))
+
+	router.Handler(http.MethodGet, prefix+"/:id", httptransport.NewServer(
+		endpoints.GetPaymentType,
+		GetRouteParamDecoder("id"),
+		httptransport.EncodeJSONResponse,
+	))
 }
 
 func decodeCreatePaymentTypeRequest(ctx context.Context, r *http.Request) (any, error) {

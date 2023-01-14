@@ -24,6 +24,7 @@ type Service interface {
 	ListPaymentTypes() ([]*PaymentType, error)
 	UpdatePaymentType(string, PaymentType) (*PaymentType, error)
 	DeletePaymentType(string) error
+	GetPaymentType(string) (*PaymentType, error)
 }
 
 type service struct {
@@ -161,4 +162,16 @@ func (s *service) DeletePaymentType(id string) error {
 	}
 
 	return nil
+}
+
+func (s *service) GetPaymentType(id string) (*PaymentType, error) {
+	paymentType, err := s.repository.GetPaymentType(id)
+	if err != nil {
+		return nil, NewError(
+			http.StatusNotFound,
+			"payment method not found",
+			"could not find payment method",
+		)
+	}
+	return paymentType, nil
 }
