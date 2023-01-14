@@ -1,0 +1,71 @@
+package pkg
+
+import "github.com/go-kit/log"
+
+type loggingService struct {
+	next   Service
+	logger log.Logger
+}
+
+func NewLoggingService(next Service, logger log.Logger) *loggingService {
+	return &loggingService{next, logger}
+}
+
+func (l *loggingService) GetPaymentMethod(id string) (method *PaymentMethod, err error) {
+	defer func() {
+		l.logger.Log(
+			"method", "GetPaymentMethod",
+			"id", id,
+			"method", method,
+			"err", err,
+		)
+	}()
+	return l.next.GetPaymentMethod(id)
+}
+
+func (l *loggingService) ListPaymentMethods() (methods []*PaymentMethod, err error) {
+	defer func() {
+		l.logger.Log(
+			"method", "ListPaymentMethods",
+			"methods", methods,
+			"err", err,
+		)
+	}()
+	return l.next.ListPaymentMethods()
+}
+
+func (l *loggingService) CreatePaymentMethod(data PaymentMethod) (method *PaymentMethod, err error) {
+	defer func() {
+		l.logger.Log(
+			"method", "CreatePaymentMethod",
+			"data", data,
+			"method", method,
+			"err", err,
+		)
+	}()
+	return l.next.CreatePaymentMethod(data)
+}
+
+func (l *loggingService) UpdatePaymentMethod(id string, data PaymentMethod) (method *PaymentMethod, err error) {
+	defer func() {
+		l.logger.Log(
+			"method", "UpdatePaymentMethod",
+			"id", id,
+			"data", data,
+			"method", method,
+			"err", err,
+		)
+	}()
+	return l.next.UpdatePaymentMethod(id, data)
+}
+
+func (l *loggingService) DeletePaymentMethod(id string) (err error) {
+	defer func() {
+		l.logger.Log(
+			"method", "DeletePaymentMethod",
+			"id", id,
+			"err", err,
+		)
+	}()
+	return l.next.DeletePaymentMethod(id)
+}

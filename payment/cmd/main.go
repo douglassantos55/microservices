@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/go-kit/log"
 	"reconcip.com.br/microservices/payment/pkg"
 )
 
@@ -19,7 +20,12 @@ func main() {
 		panic(err)
 	}
 
+	logger := log.NewJSONLogger(log.NewSyncWriter(os.Stderr))
+	logger = log.WithPrefix(logger, "ts", log.DefaultTimestamp)
+	logger = log.WithPrefix(logger, "caller", log.DefaultCaller)
+
 	svc := pkg.NewService(pkg.NewValidator(), repository)
+	svc = pkg.NewLoggingService(svc, logger)
 	endpoints := pkg.CreateEndpoints(svc)
 
 	http.ListenAndServe(":80", pkg.NewHTTPHandler(endpoints))
