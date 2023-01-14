@@ -81,7 +81,7 @@ func (r *mongoRepository) ListPaymentMethods() ([]*PaymentMethod, error) {
 		return nil, err
 	}
 
-	var methods []*PaymentMethod
+	methods := make([]*PaymentMethod, 0)
 	if err := cursor.All(ctx, &methods); err != nil {
 		return nil, err
 	}
