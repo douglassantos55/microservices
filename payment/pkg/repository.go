@@ -28,6 +28,7 @@ type Repository interface {
 	GetPaymentCondition(string) (*Condition, error)
 	ListPaymentConditions() ([]*Condition, error)
 	UpdatePaymentCondition(string, Condition) (*Condition, error)
+	DeletePaymentCondition(string) error
 }
 
 type mongoRepository struct {
@@ -266,4 +267,14 @@ func (r *mongoRepository) UpdatePaymentCondition(id string, data Condition) (*Co
 	}
 
 	return r.GetPaymentCondition(id)
+}
+
+func (r *mongoRepository) DeletePaymentCondition(id string) error {
+	collection := r.database.Collection("payment_conditions")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+
+	defer cancel()
+	_, err := collection.DeleteOne(ctx, bson.M{"_id": id})
+
+	return err
 }

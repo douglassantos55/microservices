@@ -185,6 +185,12 @@ func makePaymentConditionRoutes(prefix string, router *httprouter.Router, endpoi
 		decodeUpdateConditionRequest,
 		httptransport.EncodeJSONResponse,
 	))
+
+	router.Handler(http.MethodDelete, prefix+"/:id", httptransport.NewServer(
+		endpoints.DeletePaymentCondition,
+		GetRouteParamDecoder("id"),
+		encodeDeleteResponse,
+	))
 }
 
 func decodeCreatePaymentConditionRequest(ctx context.Context, r *http.Request) (any, error) {

@@ -37,6 +37,7 @@ type Service interface {
 	CreatePaymentCondition(Condition) (*Condition, error)
 	ListPaymentConditions() ([]*Condition, error)
 	UpdatePaymentCondition(string, Condition) (*Condition, error)
+	DeletePaymentCondition(string) error
 }
 
 type service struct {
@@ -232,4 +233,15 @@ func (s *service) UpdatePaymentCondition(id string, data Condition) (*Condition,
 	}
 
 	return condition, nil
+}
+
+func (s *service) DeletePaymentCondition(id string) error {
+	if _, err := s.repository.GetPaymentCondition(id); err != nil {
+		return NewError(
+			http.StatusNotFound,
+			"condition not found",
+			"could not find condition you're trying to delete",
+		)
+	}
+	return s.repository.DeletePaymentCondition(id)
 }

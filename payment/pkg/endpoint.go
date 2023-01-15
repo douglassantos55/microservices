@@ -22,6 +22,7 @@ type Set struct {
 	CreatePaymentCondition endpoint.Endpoint
 	ListPaymentConditions  endpoint.Endpoint
 	UpdatePaymentCondition endpoint.Endpoint
+	DeletePaymentCondition endpoint.Endpoint
 }
 
 func CreateEndpoints(svc Service) Set {
@@ -41,6 +42,7 @@ func CreateEndpoints(svc Service) Set {
 		CreatePaymentCondition: makeCreatePaymentConditionEndpoint(svc),
 		ListPaymentConditions:  makeListPaymentConditionsEndpoint(svc),
 		UpdatePaymentCondition: makeUpdatePaymentConditionEndpoint(svc),
+		DeletePaymentCondition: makeDeletePaymentConditionEndpoint(svc),
 	}
 }
 
@@ -125,5 +127,11 @@ func makeUpdatePaymentConditionEndpoint(svc Service) endpoint.Endpoint {
 	return func(ctx context.Context, r any) (any, error) {
 		req := r.(UpdateConditionRequest)
 		return svc.UpdatePaymentCondition(req.ID, req.Data)
+	}
+}
+
+func makeDeletePaymentConditionEndpoint(svc Service) endpoint.Endpoint {
+	return func(ctx context.Context, r any) (any, error) {
+		return nil, svc.DeletePaymentCondition(r.(string))
 	}
 }

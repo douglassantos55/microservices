@@ -164,3 +164,14 @@ func (l *loggingService) UpdatePaymentCondition(id string, data Condition) (cond
 	}()
 	return l.next.UpdatePaymentCondition(id, data)
 }
+
+func (l *loggingService) DeletePaymentCondition(id string) (err error) {
+	defer func() {
+		l.logger.Log(
+			"method", "DeletePaymentCondition",
+			"id", id,
+			"err", err,
+		)
+	}()
+	return l.next.DeletePaymentCondition(id)
+}
