@@ -24,9 +24,12 @@ func main() {
 	logger = log.WithPrefix(logger, "ts", log.DefaultTimestamp)
 	logger = log.WithPrefix(logger, "caller", log.DefaultCaller)
 
-	svc := pkg.NewService(pkg.NewValidator(), repository)
+	validator := pkg.NewValidator([]pkg.ValidationRule{
+		pkg.NewPaymentTypeRule(repository),
+	})
+	svc := pkg.NewService(validator, repository)
 	svc = pkg.NewLoggingService(svc, logger)
-	endpoints := pkg.CreateEndpoints(svc)
 
+	endpoints := pkg.CreateEndpoints(svc)
 	http.ListenAndServe(":80", pkg.NewHTTPHandler(endpoints))
 }

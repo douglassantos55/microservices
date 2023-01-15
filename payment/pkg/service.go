@@ -17,7 +17,7 @@ type Condition struct {
 	ID            string  `json:"id,omitempty" bson:"_id,omitempty"`
 	Name          string  `json:"name" validate:"required"`
 	Increment     float64 `json:"increment" validate:"min=0"`
-	PaymentTypeID string  `json:"payment_type_id" validate:"required,exists=payment_types"`
+	PaymentTypeID string  `json:"payment_type_id" validate:"required,paymenttype"`
 	Installments  []int   `json:"installments,dive,gt=0"`
 }
 

@@ -11,6 +11,11 @@ type Validator interface {
 	Validate(any) error
 }
 
+type ValidationRule interface {
+	Tag() string
+	Valid(string) bool
+}
+
 type ValidationError struct {
 	errors map[string]string
 }
@@ -28,11 +33,23 @@ func (e ValidationError) Error() string {
 }
 
 type validate struct {
+	rules     []ValidationRule
 	validator *validator.Validate
 }
 
-func NewValidator() *validate {
-	return &validate{validator.New()}
+func NewValidator(rules []ValidationRule) *validate {
+	validate := &validate{rules, validator.New()}
+	validate.registerRules()
+
+	return validate
+}
+
+func (v *validate) registerRules() {
+	for _, rule := range v.rules {
+		v.validator.RegisterValidation(rule.Tag(), func(fl validator.FieldLevel) bool {
+			return rule.Valid(fl.Field().String())
+		})
+	}
 }
 
 func (v *validate) Validate(data any) error {
@@ -57,7 +74,30 @@ func getErrorMessage(error string) string {
 		return "this field is required"
 	case "numeric", "number":
 		return "this field contain a number"
+	case "paymenttype":
+		return "invalid payment type"
 	default:
 		return "something is not right about this field"
 	}
+}
+
+type PaymentTypeSource interface {
+	GetPaymentType(string) (*PaymentType, error)
+}
+
+type PaymentTypeRule struct {
+	service PaymentTypeSource
+}
+
+func NewPaymentTypeRule(svc PaymentTypeSource) *PaymentTypeRule {
+	return &PaymentTypeRule{svc}
+}
+
+func (r PaymentTypeRule) Tag() string {
+	return "paymenttype"
+}
+
+func (r PaymentTypeRule) Valid(value string) bool {
+	_, err := r.service.GetPaymentType(value)
+	return err == nil
 }
