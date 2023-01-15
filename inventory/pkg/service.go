@@ -12,7 +12,7 @@ type Equipment struct {
 	PurchaseValue  float64        `json:"purchase_value" validate:"omitempty,numeric"`
 	ReplaceValue   float64        `json:"replace_value" validate:"omitempty,numeric"`
 	MinQty         int            `json:"min_qty" validate:"omitempty,number"`
-	SupplierID     string         `json:"supplier_id,omitempty"`
+	SupplierID     string         `json:"supplier_id,omitempty" validate:"omitempty,supplier"`
 	Supplier       *Supplier      `json:"supplier"`
 	RentingValues  []RentingValue `json:"renting_values" validate:"required,dive"`
 }

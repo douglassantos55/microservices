@@ -13,7 +13,17 @@ import (
 )
 
 func main() {
-	validator := pkg.NewValidator()
+	supplierUrl := os.Getenv("SUPPLIER_SERVICE_URL")
+	conn, err := grpc.Dial(supplierUrl+":8080", grpc.WithInsecure())
+	if err != nil {
+		panic(err)
+	}
+
+	defer conn.Close()
+
+	validator := pkg.NewValidator([]pkg.ValidationRule{
+		pkg.NewSupplierRule(conn),
+	})
 
 	repository, err := pkg.NewMongoRepository(
 		os.Getenv("MONGODB_URL"),
@@ -24,14 +34,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
-	supplierUrl := os.Getenv("SUPPLIER_SERVICE_URL")
-	conn, err := grpc.Dial(supplierUrl+":8080", grpc.WithInsecure())
-	if err != nil {
-		panic(err)
-	}
-
-	defer conn.Close()
 
 	logger := log.NewJSONLogger(log.NewSyncWriter(os.Stderr))
 	logger = log.WithPrefix(logger, "ts", log.DefaultTimestamp)
