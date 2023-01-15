@@ -35,6 +35,7 @@ type Service interface {
 	GetPaymentType(string) (*PaymentType, error)
 
 	CreatePaymentCondition(Condition) (*Condition, error)
+	ListPaymentConditions() ([]*Condition, error)
 }
 
 type service struct {
@@ -201,4 +202,8 @@ func (s *service) CreatePaymentCondition(data Condition) (*Condition, error) {
 	}
 
 	return condition, nil
+}
+
+func (s *service) ListPaymentConditions() ([]*Condition, error) {
+	return s.repository.ListPaymentConditions()
 }

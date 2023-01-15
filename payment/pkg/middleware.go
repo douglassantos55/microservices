@@ -140,3 +140,14 @@ func (l *loggingService) CreatePaymentCondition(data Condition) (condition *Cond
 	}()
 	return l.next.CreatePaymentCondition(data)
 }
+
+func (l *loggingService) ListPaymentConditions() (conditions []*Condition, err error) {
+	defer func() {
+		l.logger.Log(
+			"method", "ListPaymentConditions",
+			"conditions", conditions,
+			"err", err,
+		)
+	}()
+	return l.next.ListPaymentConditions()
+}

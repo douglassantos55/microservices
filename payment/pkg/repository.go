@@ -26,6 +26,7 @@ type Repository interface {
 
 	CreatePaymentCondition(Condition) (*Condition, error)
 	GetPaymentCondition(string) (*Condition, error)
+	ListPaymentConditions() ([]*Condition, error)
 }
 
 type mongoRepository struct {
@@ -229,4 +230,25 @@ func (r *mongoRepository) GetPaymentCondition(id string) (*Condition, error) {
 	err := result.Decode(&condition)
 
 	return condition, err
+}
+
+func (r *mongoRepository) ListPaymentConditions() ([]*Condition, error) {
+	collection := r.database.Collection("payment_conditions")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+
+	defer cancel()
+	result, err := collection.Find(ctx, bson.D{})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if result.Err() != nil {
+		return nil, result.Err()
+	}
+
+	conditions := make([]*Condition, 0)
+	err = result.All(ctx, &conditions)
+
+	return conditions, err
 }
