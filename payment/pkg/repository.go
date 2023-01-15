@@ -12,16 +12,16 @@ import (
 )
 
 type Repository interface {
-	GetPaymentMethod(string) (*PaymentMethod, error)
-	CreatePaymentMethod(PaymentMethod) (*PaymentMethod, error)
-	ListPaymentMethods() ([]*PaymentMethod, error)
-	UpdatePaymentMethod(string, PaymentMethod) (*PaymentMethod, error)
+	GetPaymentMethod(string) (*Method, error)
+	CreatePaymentMethod(Method) (*Method, error)
+	ListPaymentMethods() ([]*Method, error)
+	UpdatePaymentMethod(string, Method) (*Method, error)
 	DeletePaymentMethod(string) error
 
-	CreatePaymentType(PaymentType) (*PaymentType, error)
-	GetPaymentType(string) (*PaymentType, error)
-	ListPaymentTypes() ([]*PaymentType, error)
-	UpdatePaymentType(string, PaymentType) (*PaymentType, error)
+	CreatePaymentType(Type) (*Type, error)
+	GetPaymentType(string) (*Type, error)
+	ListPaymentTypes() ([]*Type, error)
+	UpdatePaymentType(string, Type) (*Type, error)
 	DeletePaymentType(string) error
 
 	CreatePaymentCondition(Condition) (*Condition, error)
@@ -47,7 +47,7 @@ func NewMongoRepository(url, user, pass, db string) (*mongoRepository, error) {
 	return &mongoRepository{database}, nil
 }
 
-func (r *mongoRepository) CreatePaymentMethod(data PaymentMethod) (*PaymentMethod, error) {
+func (r *mongoRepository) CreatePaymentMethod(data Method) (*Method, error) {
 	collection := r.database.Collection("payment_methods")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 
@@ -63,7 +63,7 @@ func (r *mongoRepository) CreatePaymentMethod(data PaymentMethod) (*PaymentMetho
 	return r.GetPaymentMethod(result.InsertedID.(string))
 }
 
-func (r *mongoRepository) GetPaymentMethod(id string) (*PaymentMethod, error) {
+func (r *mongoRepository) GetPaymentMethod(id string) (*Method, error) {
 	collection := r.database.Collection("payment_methods")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 
@@ -74,7 +74,7 @@ func (r *mongoRepository) GetPaymentMethod(id string) (*PaymentMethod, error) {
 		return nil, result.Err()
 	}
 
-	var method *PaymentMethod
+	var method *Method
 	if err := result.Decode(&method); err != nil {
 		return nil, err
 	}
@@ -82,7 +82,7 @@ func (r *mongoRepository) GetPaymentMethod(id string) (*PaymentMethod, error) {
 	return method, nil
 }
 
-func (r *mongoRepository) ListPaymentMethods() ([]*PaymentMethod, error) {
+func (r *mongoRepository) ListPaymentMethods() ([]*Method, error) {
 	collection := r.database.Collection("payment_methods")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 
@@ -93,7 +93,7 @@ func (r *mongoRepository) ListPaymentMethods() ([]*PaymentMethod, error) {
 		return nil, err
 	}
 
-	methods := make([]*PaymentMethod, 0)
+	methods := make([]*Method, 0)
 	if err := cursor.All(ctx, &methods); err != nil {
 		return nil, err
 	}
@@ -101,7 +101,7 @@ func (r *mongoRepository) ListPaymentMethods() ([]*PaymentMethod, error) {
 	return methods, nil
 }
 
-func (r *mongoRepository) UpdatePaymentMethod(id string, data PaymentMethod) (*PaymentMethod, error) {
+func (r *mongoRepository) UpdatePaymentMethod(id string, data Method) (*Method, error) {
 	collection := r.database.Collection("payment_methods")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 
@@ -125,7 +125,7 @@ func (r *mongoRepository) DeletePaymentMethod(id string) error {
 	return err
 }
 
-func (r *mongoRepository) CreatePaymentType(data PaymentType) (*PaymentType, error) {
+func (r *mongoRepository) CreatePaymentType(data Type) (*Type, error) {
 	collection := r.database.Collection("payment_types")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 
@@ -141,20 +141,20 @@ func (r *mongoRepository) CreatePaymentType(data PaymentType) (*PaymentType, err
 	return r.GetPaymentType(result.InsertedID.(string))
 }
 
-func (r *mongoRepository) GetPaymentType(id string) (*PaymentType, error) {
+func (r *mongoRepository) GetPaymentType(id string) (*Type, error) {
 	collection := r.database.Collection("payment_types")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 
 	defer cancel()
 	result := collection.FindOne(ctx, bson.M{"_id": id})
 
-	var paymentType *PaymentType
+	var paymentType *Type
 	err := result.Decode(&paymentType)
 
 	return paymentType, err
 }
 
-func (r *mongoRepository) ListPaymentTypes() ([]*PaymentType, error) {
+func (r *mongoRepository) ListPaymentTypes() ([]*Type, error) {
 	collection := r.database.Collection("payment_types")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 
@@ -169,7 +169,7 @@ func (r *mongoRepository) ListPaymentTypes() ([]*PaymentType, error) {
 		return nil, result.Err()
 	}
 
-	paymentTypes := make([]*PaymentType, 0)
+	paymentTypes := make([]*Type, 0)
 	if err := result.All(ctx, &paymentTypes); err != nil {
 		return nil, err
 	}
@@ -177,7 +177,7 @@ func (r *mongoRepository) ListPaymentTypes() ([]*PaymentType, error) {
 	return paymentTypes, nil
 }
 
-func (r *mongoRepository) UpdatePaymentType(id string, data PaymentType) (*PaymentType, error) {
+func (r *mongoRepository) UpdatePaymentType(id string, data Type) (*Type, error) {
 	collection := r.database.Collection("payment_types")
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 

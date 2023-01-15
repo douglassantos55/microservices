@@ -2,13 +2,13 @@ package pkg
 
 import "net/http"
 
-type PaymentMethod struct {
+type Method struct {
 	ID        string `json:"id" bson:"_id,omitempty"`
 	Name      string `json:"name" validate:"required"`
 	AccountID string `json:"account_id" validate:"required"`
 }
 
-type PaymentType struct {
+type Type struct {
 	ID   string `json:"id,omitempty" bson:"_id,omitempty"`
 	Name string `json:"name" validate:"required"`
 }
@@ -22,17 +22,17 @@ type Condition struct {
 }
 
 type Service interface {
-	CreatePaymentMethod(PaymentMethod) (*PaymentMethod, error)
-	ListPaymentMethods() ([]*PaymentMethod, error)
-	UpdatePaymentMethod(string, PaymentMethod) (*PaymentMethod, error)
+	CreatePaymentMethod(Method) (*Method, error)
+	ListPaymentMethods() ([]*Method, error)
+	UpdatePaymentMethod(string, Method) (*Method, error)
 	DeletePaymentMethod(string) error
-	GetPaymentMethod(string) (*PaymentMethod, error)
+	GetPaymentMethod(string) (*Method, error)
 
-	CreatePaymentType(PaymentType) (*PaymentType, error)
-	ListPaymentTypes() ([]*PaymentType, error)
-	UpdatePaymentType(string, PaymentType) (*PaymentType, error)
+	CreatePaymentType(Type) (*Type, error)
+	ListPaymentTypes() ([]*Type, error)
+	UpdatePaymentType(string, Type) (*Type, error)
 	DeletePaymentType(string) error
-	GetPaymentType(string) (*PaymentType, error)
+	GetPaymentType(string) (*Type, error)
 
 	CreatePaymentCondition(Condition) (*Condition, error)
 	ListPaymentConditions() ([]*Condition, error)
@@ -50,7 +50,7 @@ func NewService(validator Validator, repository Repository) Service {
 	return &service{validator, repository}
 }
 
-func (s *service) CreatePaymentMethod(data PaymentMethod) (*PaymentMethod, error) {
+func (s *service) CreatePaymentMethod(data Method) (*Method, error) {
 	if err := s.validator.Validate(data); err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func (s *service) CreatePaymentMethod(data PaymentMethod) (*PaymentMethod, error
 	return method, nil
 }
 
-func (s *service) UpdatePaymentMethod(id string, data PaymentMethod) (*PaymentMethod, error) {
+func (s *service) UpdatePaymentMethod(id string, data Method) (*Method, error) {
 	if err := s.validator.Validate(data); err != nil {
 		return nil, err
 	}
@@ -84,7 +84,7 @@ func (s *service) UpdatePaymentMethod(id string, data PaymentMethod) (*PaymentMe
 	return method, err
 }
 
-func (s *service) ListPaymentMethods() ([]*PaymentMethod, error) {
+func (s *service) ListPaymentMethods() ([]*Method, error) {
 	return s.repository.ListPaymentMethods()
 }
 
@@ -108,7 +108,7 @@ func (s *service) DeletePaymentMethod(id string) error {
 	return nil
 }
 
-func (s *service) GetPaymentMethod(id string) (*PaymentMethod, error) {
+func (s *service) GetPaymentMethod(id string) (*Method, error) {
 	method, err := s.repository.GetPaymentMethod(id)
 	if err != nil {
 		return nil, NewError(
@@ -120,7 +120,7 @@ func (s *service) GetPaymentMethod(id string) (*PaymentMethod, error) {
 	return method, nil
 }
 
-func (s *service) CreatePaymentType(data PaymentType) (*PaymentType, error) {
+func (s *service) CreatePaymentType(data Type) (*Type, error) {
 	if err := s.validator.Validate(data); err != nil {
 		return nil, err
 	}
@@ -137,11 +137,11 @@ func (s *service) CreatePaymentType(data PaymentType) (*PaymentType, error) {
 	return paymentType, nil
 }
 
-func (s *service) ListPaymentTypes() ([]*PaymentType, error) {
+func (s *service) ListPaymentTypes() ([]*Type, error) {
 	return s.repository.ListPaymentTypes()
 }
 
-func (s *service) UpdatePaymentType(id string, data PaymentType) (*PaymentType, error) {
+func (s *service) UpdatePaymentType(id string, data Type) (*Type, error) {
 	if err := s.validator.Validate(data); err != nil {
 		return nil, err
 	}
@@ -178,7 +178,7 @@ func (s *service) DeletePaymentType(id string) error {
 	return nil
 }
 
-func (s *service) GetPaymentType(id string) (*PaymentType, error) {
+func (s *service) GetPaymentType(id string) (*Type, error) {
 	paymentType, err := s.repository.GetPaymentType(id)
 	if err != nil {
 		return nil, NewError(

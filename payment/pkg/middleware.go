@@ -11,7 +11,7 @@ func NewLoggingService(next Service, logger log.Logger) *loggingService {
 	return &loggingService{next, logger}
 }
 
-func (l *loggingService) GetPaymentMethod(id string) (method *PaymentMethod, err error) {
+func (l *loggingService) GetPaymentMethod(id string) (method *Method, err error) {
 	defer func() {
 		l.logger.Log(
 			"method", "GetPaymentMethod",
@@ -23,7 +23,7 @@ func (l *loggingService) GetPaymentMethod(id string) (method *PaymentMethod, err
 	return l.next.GetPaymentMethod(id)
 }
 
-func (l *loggingService) ListPaymentMethods() (methods []*PaymentMethod, err error) {
+func (l *loggingService) ListPaymentMethods() (methods []*Method, err error) {
 	defer func() {
 		l.logger.Log(
 			"method", "ListPaymentMethods",
@@ -34,7 +34,7 @@ func (l *loggingService) ListPaymentMethods() (methods []*PaymentMethod, err err
 	return l.next.ListPaymentMethods()
 }
 
-func (l *loggingService) CreatePaymentMethod(data PaymentMethod) (method *PaymentMethod, err error) {
+func (l *loggingService) CreatePaymentMethod(data Method) (method *Method, err error) {
 	defer func() {
 		l.logger.Log(
 			"method", "CreatePaymentMethod",
@@ -46,7 +46,7 @@ func (l *loggingService) CreatePaymentMethod(data PaymentMethod) (method *Paymen
 	return l.next.CreatePaymentMethod(data)
 }
 
-func (l *loggingService) UpdatePaymentMethod(id string, data PaymentMethod) (method *PaymentMethod, err error) {
+func (l *loggingService) UpdatePaymentMethod(id string, data Method) (method *Method, err error) {
 	defer func() {
 		l.logger.Log(
 			"method", "UpdatePaymentMethod",
@@ -70,7 +70,7 @@ func (l *loggingService) DeletePaymentMethod(id string) (err error) {
 	return l.next.DeletePaymentMethod(id)
 }
 
-func (l *loggingService) CreatePaymentType(data PaymentType) (paymentType *PaymentType, err error) {
+func (l *loggingService) CreatePaymentType(data Type) (paymentType *Type, err error) {
 	defer func() {
 		l.logger.Log(
 			"method", "CreatePaymentType",
@@ -82,7 +82,7 @@ func (l *loggingService) CreatePaymentType(data PaymentType) (paymentType *Payme
 	return l.next.CreatePaymentType(data)
 }
 
-func (l *loggingService) ListPaymentTypes() (types []*PaymentType, err error) {
+func (l *loggingService) ListPaymentTypes() (types []*Type, err error) {
 	defer func() {
 		l.logger.Log(
 			"method", "ListPaymentTypes",
@@ -93,7 +93,7 @@ func (l *loggingService) ListPaymentTypes() (types []*PaymentType, err error) {
 	return l.next.ListPaymentTypes()
 }
 
-func (l *loggingService) UpdatePaymentType(id string, data PaymentType) (paymentType *PaymentType, err error) {
+func (l *loggingService) UpdatePaymentType(id string, data Type) (paymentType *Type, err error) {
 	defer func() {
 		l.logger.Log(
 			"method", "UpdatePaymentType",
@@ -117,7 +117,7 @@ func (l *loggingService) DeletePaymentType(id string) (err error) {
 	return l.next.DeletePaymentType(id)
 }
 
-func (l *loggingService) GetPaymentType(id string) (paymentType *PaymentType, err error) {
+func (l *loggingService) GetPaymentType(id string) (paymentType *Type, err error) {
 	defer func() {
 		l.logger.Log(
 			"method", "GetPaymentType",

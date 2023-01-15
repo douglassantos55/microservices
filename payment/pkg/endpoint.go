@@ -50,7 +50,7 @@ func CreateEndpoints(svc Service) Set {
 
 func makeCreatePaymentMethodEndpoint(svc Service) endpoint.Endpoint {
 	return func(ctx context.Context, r any) (any, error) {
-		method := r.(PaymentMethod)
+		method := r.(Method)
 		return svc.CreatePaymentMethod(method)
 	}
 }
@@ -82,7 +82,7 @@ func makeGetPaymentMethodEndpoint(svc Service) endpoint.Endpoint {
 
 func makeCreatePaymentTypeEndpoint(svc Service) endpoint.Endpoint {
 	return func(ctx context.Context, r any) (any, error) {
-		data := r.(PaymentType)
+		data := r.(Type)
 		return svc.CreatePaymentType(data)
 	}
 }

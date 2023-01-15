@@ -82,7 +82,7 @@ func getErrorMessage(error string) string {
 }
 
 type PaymentTypeSource interface {
-	GetPaymentType(string) (*PaymentType, error)
+	GetPaymentType(string) (*Type, error)
 }
 
 type PaymentTypeRule struct {

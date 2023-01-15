@@ -52,7 +52,7 @@ func makePaymentMethodRoutes(prefix string, router *httprouter.Router, endpoints
 }
 
 func decodeCreatePaymentMethodRequest(ctx context.Context, r *http.Request) (any, error) {
-	var method PaymentMethod
+	var method Method
 
 	if err := json.NewDecoder(r.Body).Decode(&method); err != nil {
 		return nil, NewError(
@@ -68,7 +68,7 @@ func decodeCreatePaymentMethodRequest(ctx context.Context, r *http.Request) (any
 func decodeUpdatePaymentMethodRequest(ctx context.Context, r *http.Request) (any, error) {
 	params := httprouter.ParamsFromContext(r.Context())
 
-	var method PaymentMethod
+	var method Method
 	if err := json.NewDecoder(r.Body).Decode(&method); err != nil {
 		return nil, NewError(
 			http.StatusBadRequest,
@@ -85,7 +85,7 @@ func decodeUpdatePaymentMethodRequest(ctx context.Context, r *http.Request) (any
 
 type UpdatePaymentMethodRequest struct {
 	ID   string
-	Data PaymentMethod
+	Data Method
 }
 
 func GetRouteParamDecoder(param string) httptransport.DecodeRequestFunc {
@@ -133,7 +133,7 @@ func makePaymentTypeRoutes(prefix string, router *httprouter.Router, endpoints S
 }
 
 func decodeCreatePaymentTypeRequest(ctx context.Context, r *http.Request) (any, error) {
-	var paymentType PaymentType
+	var paymentType Type
 	if err := json.NewDecoder(r.Body).Decode(&paymentType); err != nil {
 		return nil, NewError(
 			http.StatusBadRequest,
@@ -147,7 +147,7 @@ func decodeCreatePaymentTypeRequest(ctx context.Context, r *http.Request) (any, 
 func decodeUpdatePaymentTypeRequest(ctx context.Context, r *http.Request) (any, error) {
 	params := httprouter.ParamsFromContext(r.Context())
 
-	var method PaymentType
+	var method Type
 	if err := json.NewDecoder(r.Body).Decode(&method); err != nil {
 		return nil, NewError(
 			http.StatusBadRequest,
@@ -164,7 +164,7 @@ func decodeUpdatePaymentTypeRequest(ctx context.Context, r *http.Request) (any, 
 
 type UpdatePaymentTypeRequest struct {
 	ID   string
-	Data PaymentType
+	Data Type
 }
 
 func makePaymentConditionRoutes(prefix string, router *httprouter.Router, endpoints Set) {
