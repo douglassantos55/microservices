@@ -13,6 +13,14 @@ type PaymentType struct {
 	Name string `json:"name" validate:"required"`
 }
 
+type Condition struct {
+	ID            string  `json:"id,omitempty" bson:"_id,omitempty"`
+	Name          string  `json:"name" validate:"required"`
+	Increment     float64 `json:"increment" validate:"min=0"`
+	PaymentTypeID string  `json:"payment_type_id" validate:"required,exists=payment_types"`
+	Installments  []int   `json:"installments,dive,gt=0"`
+}
+
 type Service interface {
 	CreatePaymentMethod(PaymentMethod) (*PaymentMethod, error)
 	ListPaymentMethods() ([]*PaymentMethod, error)
@@ -25,6 +33,8 @@ type Service interface {
 	UpdatePaymentType(string, PaymentType) (*PaymentType, error)
 	DeletePaymentType(string) error
 	GetPaymentType(string) (*PaymentType, error)
+
+	CreatePaymentCondition(Condition) (*Condition, error)
 }
 
 type service struct {
@@ -174,4 +184,21 @@ func (s *service) GetPaymentType(id string) (*PaymentType, error) {
 		)
 	}
 	return paymentType, nil
+}
+
+func (s *service) CreatePaymentCondition(data Condition) (*Condition, error) {
+	if err := s.validator.Validate(data); err != nil {
+		return nil, err
+	}
+
+	condition, err := s.repository.CreatePaymentCondition(data)
+	if err != nil {
+		return nil, NewError(
+			http.StatusInternalServerError,
+			"error creating condition",
+			"something went wrong creating condition",
+		)
+	}
+
+	return condition, nil
 }

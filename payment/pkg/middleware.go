@@ -128,3 +128,15 @@ func (l *loggingService) GetPaymentType(id string) (paymentType *PaymentType, er
 	}()
 	return l.next.GetPaymentType(id)
 }
+
+func (l *loggingService) CreatePaymentCondition(data Condition) (condition *Condition, err error) {
+	defer func() {
+		l.logger.Log(
+			"method", "CreatePaymentCondition",
+			"data", data,
+			"condition", condition,
+			"err", err,
+		)
+	}()
+	return l.next.CreatePaymentCondition(data)
+}
