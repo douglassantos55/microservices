@@ -36,6 +36,7 @@ type Service interface {
 
 	CreatePaymentCondition(Condition) (*Condition, error)
 	ListPaymentConditions() ([]*Condition, error)
+	UpdatePaymentCondition(string, Condition) (*Condition, error)
 }
 
 type service struct {
@@ -206,4 +207,29 @@ func (s *service) CreatePaymentCondition(data Condition) (*Condition, error) {
 
 func (s *service) ListPaymentConditions() ([]*Condition, error) {
 	return s.repository.ListPaymentConditions()
+}
+
+func (s *service) UpdatePaymentCondition(id string, data Condition) (*Condition, error) {
+	if _, err := s.repository.GetPaymentCondition(id); err != nil {
+		return nil, NewError(
+			http.StatusNotFound,
+			"condition not found",
+			"could not find the condition you're trying to update",
+		)
+	}
+
+	if err := s.validator.Validate(data); err != nil {
+		return nil, err
+	}
+
+	condition, err := s.repository.UpdatePaymentCondition(id, data)
+	if err != nil {
+		return nil, NewError(
+			http.StatusInternalServerError,
+			"error updating condition",
+			"something went wrong updating condition",
+		)
+	}
+
+	return condition, nil
 }

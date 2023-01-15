@@ -179,6 +179,12 @@ func makePaymentConditionRoutes(prefix string, router *httprouter.Router, endpoi
 		httptransport.NopRequestDecoder,
 		httptransport.EncodeJSONResponse,
 	))
+
+	router.Handler(http.MethodPut, prefix+"/:id", httptransport.NewServer(
+		endpoints.UpdatePaymentCondition,
+		decodeUpdateConditionRequest,
+		httptransport.EncodeJSONResponse,
+	))
 }
 
 func decodeCreatePaymentConditionRequest(ctx context.Context, r *http.Request) (any, error) {
@@ -192,4 +198,26 @@ func decodeCreatePaymentConditionRequest(ctx context.Context, r *http.Request) (
 	}
 	return condition, nil
 }
+
+func decodeUpdateConditionRequest(ctx context.Context, r *http.Request) (any, error) {
+	params := httprouter.ParamsFromContext(r.Context())
+
+	var condition Condition
+	if err := json.NewDecoder(r.Body).Decode(&condition); err != nil {
+		return nil, NewError(
+			http.StatusBadRequest,
+			"invalid input data",
+			"verify your input and try again",
+		)
+	}
+
+	return UpdateConditionRequest{
+		ID:   params.ByName("id"),
+		Data: condition,
+	}, nil
+}
+
+type UpdateConditionRequest struct {
+	ID   string
+	Data Condition
 }
