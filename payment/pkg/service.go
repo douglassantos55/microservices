@@ -19,6 +19,7 @@ type Condition struct {
 	Increment     float64 `json:"increment" validate:"min=0"`
 	PaymentTypeID string  `json:"payment_type_id" validate:"required,paymenttype"`
 	Installments  []int   `json:"installments,dive,gt=0"`
+	PaymentType   *Type   `json:"payment_type,omitempty"`
 }
 
 type Service interface {

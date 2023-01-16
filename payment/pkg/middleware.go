@@ -1,6 +1,42 @@
 package pkg
 
-import "github.com/go-kit/log"
+import (
+	"context"
+
+	"github.com/go-kit/kit/endpoint"
+	"github.com/go-kit/log"
+)
+
+func getTypeMiddleware(svc Service) endpoint.Middleware {
+	return func(next endpoint.Endpoint) endpoint.Endpoint {
+		return func(ctx context.Context, r any) (any, error) {
+			res, err := next(ctx, r)
+			if err != nil {
+				return nil, err
+			}
+
+			if conditions, ok := res.([]*Condition); ok {
+				for _, condition := range conditions {
+					paymentType, err := svc.GetPaymentType(condition.PaymentTypeID)
+					if err == nil {
+						condition.PaymentType = paymentType
+					}
+				}
+				return conditions, nil
+			}
+
+			if condition, ok := res.(*Condition); ok {
+				paymentType, err := svc.GetPaymentType(condition.PaymentTypeID)
+				if err == nil {
+					condition.PaymentType = paymentType
+				}
+				return condition, nil
+			}
+
+			return res, nil
+		}
+	}
+}
 
 type loggingService struct {
 	next   Service

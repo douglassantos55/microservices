@@ -27,6 +27,7 @@ type Set struct {
 }
 
 func CreateEndpoints(svc Service) Set {
+	getType := getTypeMiddleware(svc)
 	return Set{
 		CreatePaymentMethod: makeCreatePaymentMethodEndpoint(svc),
 		ListPaymentMethods:  makeListPaymentMethodsEndpoint(svc),
@@ -40,11 +41,11 @@ func CreateEndpoints(svc Service) Set {
 		DeletePaymentType: makeDeletePaymentTypeEndpoint(svc),
 		GetPaymentType:    makeGetPaymentTypeEndpoint(svc),
 
-		CreatePaymentCondition: makeCreatePaymentConditionEndpoint(svc),
-		ListPaymentConditions:  makeListPaymentConditionsEndpoint(svc),
-		UpdatePaymentCondition: makeUpdatePaymentConditionEndpoint(svc),
-		DeletePaymentCondition: makeDeletePaymentConditionEndpoint(svc),
-		GetPaymentCondition:    makeGetPaymentConditionEndpoint(svc),
+		CreatePaymentCondition: getType(makeCreatePaymentConditionEndpoint(svc)),
+		ListPaymentConditions:  getType(makeListPaymentConditionsEndpoint(svc)),
+		UpdatePaymentCondition: getType(makeUpdatePaymentConditionEndpoint(svc)),
+		DeletePaymentCondition: getType(makeDeletePaymentConditionEndpoint(svc)),
+		GetPaymentCondition:    getType(makeGetPaymentConditionEndpoint(svc)),
 	}
 }
 
