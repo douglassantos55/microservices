@@ -28,6 +28,10 @@ build:
     context: payment
     docker:
       dockerfile: Dockerfile
+  - image: renting
+    context: renting
+    docker:
+      dockerfile: Dockerfile
 manifests:
   rawYaml:
   - auth.yml
@@ -37,3 +41,4 @@ manifests:
   - inventory.yml
   - delivery.yml
   - payment.yml
+  - renting.yml
