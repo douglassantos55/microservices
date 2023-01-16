@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "reconcip.com.br/microservices/payment/proto";
+
+service Payment {
+    rpc GetMethod(GetRequest) returns (MethodReply);
+    rpc GetType(GetRequest) returns (TypeReply);
+    rpc GetCondition(GetRequest) returns (ConditionReply);
+}
+
+message GetRequest {
+    string id = 1;
+}
+
+message MethodReply {
+    Method method = 1;
+    string err = 2;
+}
+
+message Method {
+    string id = 1;
+    string name = 2;
+}
+
+message TypeReply {
+    Type type = 1;
+    string err = 2;
+}
+
+message Type {
+    string id = 1;
+    string name = 2;
+}
+
+message ConditionReply {
+    Condition condition = 1;
+    string err = 2;
+}
+
+message Condition {
+    string id = 1;
+    string name = 2;
+    float increment = 3;
+    Type payment_type = 4;
+    repeated int32 installments = 5;
+}

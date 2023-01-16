@@ -5,9 +5,101 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/go-kit/kit/transport/grpc"
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/julienschmidt/httprouter"
+	"reconcip.com.br/microservices/payment/proto"
 )
+
+type grpcServer struct {
+	proto.UnimplementedPaymentServer
+	getMethod    grpc.Handler
+	getType      grpc.Handler
+	getCondition grpc.Handler
+}
+
+func NewGRPCServer(endpoints Set) proto.PaymentServer {
+	return &grpcServer{
+		getMethod: grpc.NewServer(
+			endpoints.GetPaymentMethod,
+			decodeGRPCGetRequest,
+			encodeGRPCMethodReply,
+		),
+		getType: grpc.NewServer(
+			endpoints.GetPaymentType,
+			decodeGRPCGetRequest,
+			encodeGRPCTypeReply,
+		),
+		getCondition: grpc.NewServer(
+			endpoints.GetPaymentCondition,
+			decodeGRPCGetRequest,
+			encodeGRPCConditionReply,
+		),
+	}
+}
+
+func (s *grpcServer) GetType(ctx context.Context, r *proto.GetRequest) (*proto.TypeReply, error) {
+	_, reply, err := s.getType.ServeGRPC(ctx, r.GetId())
+	if err != nil {
+		return nil, err
+	}
+	return reply.(*proto.TypeReply), nil
+}
+
+func (s *grpcServer) GetMethod(ctx context.Context, r *proto.GetRequest) (*proto.MethodReply, error) {
+	_, reply, err := s.getMethod.ServeGRPC(ctx, r.GetId())
+	if err != nil {
+		return nil, err
+	}
+	return reply.(*proto.MethodReply), nil
+}
+
+func (s *grpcServer) GetCondition(ctx context.Context, r *proto.GetRequest) (*proto.ConditionReply, error) {
+	_, reply, err := s.getCondition.ServeGRPC(ctx, r.GetId())
+	if err != nil {
+		return nil, err
+	}
+	return reply.(*proto.ConditionReply), nil
+}
+
+func decodeGRPCGetRequest(ctx context.Context, r any) (any, error) {
+	return r.(string), nil
+}
+
+func encodeGRPCMethodReply(ctx context.Context, r any) (any, error) {
+	method := r.(*Method)
+
+	return &proto.MethodReply{
+		Method: &proto.Method{
+			Id:   method.ID,
+			Name: method.Name,
+		},
+	}, nil
+}
+
+func encodeGRPCTypeReply(ctx context.Context, r any) (any, error) {
+	paymentType := r.(*Type)
+
+	return &proto.TypeReply{
+		Type: &proto.Type{
+			Id:   paymentType.ID,
+			Name: paymentType.Name,
+		},
+	}, nil
+}
+
+func encodeGRPCConditionReply(ctx context.Context, r any) (any, error) {
+	condition := r.(*Condition)
+
+	return &proto.ConditionReply{
+		Condition: &proto.Condition{
+			Id:           condition.ID,
+			Name:         condition.Name,
+			Increment:    condition.Increment,
+			Installments: condition.Installments,
+		},
+	}, nil
+}
 
 func NewHTTPHandler(endpoints Set) http.Handler {
 	router := httprouter.New()

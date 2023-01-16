@@ -16,10 +16,10 @@ type Type struct {
 type Condition struct {
 	ID            string  `json:"id,omitempty" bson:"_id,omitempty"`
 	Name          string  `json:"name" validate:"required"`
-	Increment     float64 `json:"increment" validate:"min=0"`
+	Increment     float32 `json:"increment" validate:"min=0"`
 	PaymentTypeID string  `json:"payment_type_id" validate:"required,paymenttype"`
-	Installments  []int   `json:"installments,dive,gt=0"`
 	PaymentType   *Type   `json:"payment_type,omitempty"`
+	Installments  []int32 `json:"installments,dive,gt=0"`
 }
 
 type Service interface {
