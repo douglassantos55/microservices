@@ -3,7 +3,6 @@ package pkg
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 	"time"
 
@@ -78,6 +77,8 @@ func getErrorMessage(error string) string {
 		return "this field is required"
 	case "numeric", "number":
 		return "this field contain a number"
+	case "payment_type":
+		return "invalid payment type"
 	default:
 		return "something is not right about this field"
 	}
@@ -91,6 +92,28 @@ func (r PaymentMethodRule) Tag() string {
 
 func (r PaymentMethodRule) Valid(value string) bool {
 	return false
+}
+
+type paymentTypeRule struct {
+	cc *grpc.ClientConn
+}
+
+func NewPaymentTypeRule(cc *grpc.ClientConn) *paymentTypeRule {
+	return &paymentTypeRule{cc}
+}
+
+func (r paymentTypeRule) Tag() string {
+	return "payment_type"
+}
+
+func (r paymentTypeRule) Valid(value string) bool {
+	endpoint := getPaymentTypeEndpoint(r.cc)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+
+	defer cancel()
+	_, err := endpoint(ctx, value)
+
+	return err == nil
 }
 
 type PaymentConditionRule struct{}

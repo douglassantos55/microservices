@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"os"
 
+	"google.golang.org/grpc"
 	"reconcip.com.br/microservices/renting/pkg"
 )
 
@@ -19,10 +20,20 @@ func main() {
 		panic(err)
 	}
 
+	paymentUrl := os.Getenv("PAYMENT_SERVICE_URL")
+	cc, err := grpc.Dial(paymentUrl+":8080", grpc.WithInsecure())
+	if err != nil {
+		panic(err)
+	}
+
 	validator := pkg.NewValidator([]pkg.ValidationRule{
+		pkg.NewPaymentTypeRule(cc),
 	})
 
 	svc := pkg.NewService(validator, repository)
+
 	endpoints := pkg.CreateEndpoints(svc)
+	endpoints = pkg.WithPaymentTypeEndpoints(cc, endpoints)
+
 	http.ListenAndServe(":80", pkg.NewHTTPServer(endpoints))
 }

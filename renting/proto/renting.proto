@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "reconcip.com.br/microservices/renting/proto";
+
+message GetRequest {
+    string id = 1;
+}
+
+message TypeReply {
+    Type type = 1;
+    string err = 2;
+}
+
+message Type {
+    string id = 1;
+    string name = 2;
+}
