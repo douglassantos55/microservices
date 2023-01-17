@@ -49,9 +49,12 @@ func NewValidator(rules []ValidationRule) *validate {
 
 func (v *validate) registerRules() {
 	for _, rule := range v.rules {
-		v.validator.RegisterValidation(rule.Tag(), func(fl validator.FieldLevel) bool {
-			return rule.Valid(fl.Field().String())
-		})
+		validationFunc := func(rule ValidationRule) validator.Func {
+			return func(fl validator.FieldLevel) bool {
+				return rule.Valid(fl.Field().String())
+			}
+		}(rule)
+		v.validator.RegisterValidation(rule.Tag(), validationFunc)
 	}
 }
 
@@ -98,8 +101,8 @@ type paymentTypeRule struct {
 	cc *grpc.ClientConn
 }
 
-func NewPaymentTypeRule(cc *grpc.ClientConn) *paymentTypeRule {
-	return &paymentTypeRule{cc}
+func NewPaymentTypeRule(cc *grpc.ClientConn) paymentTypeRule {
+	return paymentTypeRule{cc}
 }
 
 func (r paymentTypeRule) Tag() string {

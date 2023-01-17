@@ -48,9 +48,12 @@ func NewValidator(rules []ValidationRule) Validator {
 
 func (v *validate) registerRules() {
 	for _, rule := range v.rules {
-		v.validator.RegisterValidation(rule.Tag(), func(fl validator.FieldLevel) bool {
-			return rule.Valid(fl.Field().String())
-		})
+		validationFunc := func(rule ValidationRule) validator.Func {
+			return func(fl validator.FieldLevel) bool {
+				return rule.Valid(fl.Field().String())
+			}
+		}(rule)
+		v.validator.RegisterValidation(rule.Tag(), validationFunc)
 	}
 }
 
