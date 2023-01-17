@@ -115,6 +115,37 @@ func decodePaymentMethod(ctx context.Context, r any) (any, error) {
 	}, nil
 }
 
+func WithPaymentConditionEndpoints(cc *grpc.ClientConn, endpoints Set) Set {
+	withPaymentCondition := withPaymentConditionMiddleware(cc)
+
+	return Set{
+		CreateRent: withPaymentCondition(endpoints.CreateRent),
+	}
+}
+
+func withPaymentConditionMiddleware(cc *grpc.ClientConn) endpoint.Middleware {
+	getPaymentCondition := getPaymentConditionEndpoint(cc)
+
+	return func(next endpoint.Endpoint) endpoint.Endpoint {
+		return func(ctx context.Context, r any) (any, error) {
+			res, err := next(ctx, r)
+			if err != nil {
+				return nil, err
+			}
+
+			if rent, ok := res.(*Rent); ok {
+				condition, err := getPaymentCondition(ctx, rent.PaymentConditionID)
+				if err == nil {
+					rent.PaymentCondition = condition.(*PaymentCondition)
+				}
+				return rent, nil
+			}
+
+			return res, nil
+		}
+	}
+}
+
 func getPaymentConditionEndpoint(cc *grpc.ClientConn) endpoint.Endpoint {
 	return grpctransport.NewClient(
 		cc,

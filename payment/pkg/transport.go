@@ -97,6 +97,10 @@ func encodeGRPCConditionReply(ctx context.Context, r any) (any, error) {
 			Name:         condition.Name,
 			Increment:    condition.Increment,
 			Installments: condition.Installments,
+			PaymentType: &proto.Type{
+				Id:   condition.PaymentType.ID,
+				Name: condition.PaymentType.Name,
+			},
 		},
 	}, nil
 }
