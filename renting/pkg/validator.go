@@ -102,7 +102,7 @@ func (r paymentMethodRule) Tag() string {
 }
 
 func (r paymentMethodRule) Valid(value string) bool {
-	endpoint := paymentMethodEndpoint(r.cc)
+	endpoint := getPaymentMethodEndpoint(r.cc)
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 
 	defer cancel()
@@ -133,14 +133,26 @@ func (r paymentTypeRule) Valid(value string) bool {
 	return err == nil
 }
 
-type PaymentConditionRule struct{}
+type paymentConditionRule struct {
+	cc *grpc.ClientConn
+}
 
-func (r PaymentConditionRule) Tag() string {
+func NewPaymentConditionRule(cc *grpc.ClientConn) paymentConditionRule {
+	return paymentConditionRule{cc}
+}
+
+func (r paymentConditionRule) Tag() string {
 	return "payment_condition"
 }
 
-func (r PaymentConditionRule) Valid(value string) bool {
-	return false
+func (r paymentConditionRule) Valid(value string) bool {
+	endpoint := getPaymentConditionEndpoint(r.cc)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+
+	defer cancel()
+	_, err := endpoint(ctx, value)
+
+	return err == nil
 }
 
 type CustomerRule struct{}

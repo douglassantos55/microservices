@@ -29,6 +29,7 @@ func main() {
 	validator := pkg.NewValidator([]pkg.ValidationRule{
 		pkg.NewPaymentTypeRule(cc),
 		pkg.NewPaymentMethodRule(cc),
+		pkg.NewPaymentConditionRule(cc),
 	})
 
 	svc := pkg.NewService(validator, repository)

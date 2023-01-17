@@ -27,3 +27,16 @@ message Method {
     string id = 1;
     string name = 2;
 }
+
+message ConditionReply {
+    Condition condition = 1;
+    string err = 2;
+}
+
+message Condition {
+    string id = 1;
+    string name = 2;
+    float increment = 3;
+    Type payment_type = 4;
+    repeated int32 installments = 5;
+}

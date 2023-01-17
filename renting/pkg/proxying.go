@@ -73,7 +73,7 @@ func WithPaymentMethodEndpoints(cc *grpc.ClientConn, endpoints Set) Set {
 }
 
 func withPaymentMethodMiddleware(cc *grpc.ClientConn) endpoint.Middleware {
-	getPaymentMethod := paymentMethodEndpoint(cc)
+	getPaymentMethod := getPaymentMethodEndpoint(cc)
 
 	return func(next endpoint.Endpoint) endpoint.Endpoint {
 		return func(ctx context.Context, r any) (any, error) {
@@ -95,7 +95,7 @@ func withPaymentMethodMiddleware(cc *grpc.ClientConn) endpoint.Middleware {
 	}
 }
 
-func paymentMethodEndpoint(cc *grpc.ClientConn) endpoint.Endpoint {
+func getPaymentMethodEndpoint(cc *grpc.ClientConn) endpoint.Endpoint {
 	return grpctransport.NewClient(
 		cc,
 		"proto.Payment",
@@ -112,5 +112,34 @@ func decodePaymentMethod(ctx context.Context, r any) (any, error) {
 	return &PaymentMethod{
 		ID:   reply.Method.GetId(),
 		Name: reply.Method.GetName(),
+	}, nil
+}
+
+func getPaymentConditionEndpoint(cc *grpc.ClientConn) endpoint.Endpoint {
+	return grpctransport.NewClient(
+		cc,
+		"proto.Payment",
+		"GetCondition",
+		encodeRequest,
+		decodePaymentCondition,
+		&proto.ConditionReply{},
+	).Endpoint()
+}
+
+func decodePaymentCondition(ctx context.Context, r any) (any, error) {
+	reply := r.(*proto.ConditionReply)
+
+	condition := reply.GetCondition()
+	paymentType := condition.GetPaymentType()
+
+	return &PaymentCondition{
+		ID:        condition.GetId(),
+		Name:      condition.GetName(),
+		Increment: condition.GetIncrement(),
+		PaymentType: &PaymentType{
+			ID:   paymentType.GetId(),
+			Name: paymentType.GetName(),
+		},
+		Installments: condition.GetInstallments(),
 	}, nil
 }
