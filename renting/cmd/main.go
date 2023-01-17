@@ -28,11 +28,13 @@ func main() {
 
 	validator := pkg.NewValidator([]pkg.ValidationRule{
 		pkg.NewPaymentTypeRule(cc),
+		pkg.NewPaymentMethodRule(cc),
 	})
 
 	svc := pkg.NewService(validator, repository)
 
 	endpoints := pkg.CreateEndpoints(svc)
+	endpoints = pkg.WithPaymentMethodEndpoints(cc, endpoints)
 	endpoints = pkg.WithPaymentTypeEndpoints(cc, endpoints)
 
 	http.ListenAndServe(":80", pkg.NewHTTPServer(endpoints))

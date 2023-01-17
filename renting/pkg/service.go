@@ -6,26 +6,27 @@ import (
 )
 
 type Rent struct {
-	ID                 string       `json:"id" bson:"_id,omitempty"`
-	PeriodID           string       `json:"period_id" validate:"required"`
-	PaymentMethodID    string       `json:"payment_method_id" validate:"required"`
-	PaymentConditionID string       `json:"payment_condition_id" validate:"required"`
-	PaymentTypeID      string       `json:"payment_type_id" validate:"required,payment_type"`
-	PaymentType        *PaymentType `json:"payment_type,omitempty"`
-	CarrierID          string       `json:"carrier_id" validate:"required"`
-	CustomerID         string       `json:"customer_id" validate:"required"`
-	StartDate          time.Time    `json:"start_date" validate:"required"`
-	EndDate            time.Time    `json:"end_date" validate:"required"`
-	Items              []Item       `json:"items" validate:"required,dive"`
-	QtyDays            int          `json:"qty_days" validate:"required"`
-	Discount           float64      `json:"discount" validate:"omitempty,gt=0"`
-	PaidValue          float64      `json:"paid_value" validate:"omitempty,gt=0"`
-	Bill               float64      `json:"bill" validate:"required_with=PaidValue,ltefield=PaidValue"`
-	Observations       string       `json:"observations"`
-	CheckInfo          string       `json:"check_info"`
-	DeliveryValue      float64      `json:"delivery_value" validate:"omitempty,required_with=CarrierID"`
-	DeliveryAddress    string       `json:"delivery_address" validate:"omitempty,required_with=CarrierID"`
-	UsageAddress       string       `json:"usage_address"`
+	ID                 string         `json:"id" bson:"_id,omitempty"`
+	PeriodID           string         `json:"period_id" validate:"required"`
+	PaymentMethodID    string         `json:"payment_method_id" validate:"required,payment_method"`
+	PaymentMethod      *PaymentMethod `json:"payment_method,omitempty"`
+	PaymentConditionID string         `json:"payment_condition_id" validate:"required"`
+	PaymentTypeID      string         `json:"payment_type_id" validate:"required,payment_type"`
+	PaymentType        *PaymentType   `json:"payment_type,omitempty"`
+	CarrierID          string         `json:"carrier_id" validate:"required"`
+	CustomerID         string         `json:"customer_id" validate:"required"`
+	StartDate          time.Time      `json:"start_date" validate:"required"`
+	EndDate            time.Time      `json:"end_date" validate:"required"`
+	Items              []Item         `json:"items" validate:"required,dive"`
+	QtyDays            int            `json:"qty_days" validate:"required"`
+	Discount           float64        `json:"discount" validate:"omitempty,gt=0"`
+	PaidValue          float64        `json:"paid_value" validate:"omitempty,gt=0"`
+	Bill               float64        `json:"bill" validate:"required_with=PaidValue,ltefield=PaidValue"`
+	Observations       string         `json:"observations"`
+	CheckInfo          string         `json:"check_info"`
+	DeliveryValue      float64        `json:"delivery_value" validate:"omitempty,required_with=CarrierID"`
+	DeliveryAddress    string         `json:"delivery_address" validate:"omitempty,required_with=CarrierID"`
+	UsageAddress       string         `json:"usage_address"`
 }
 
 type Item struct {
@@ -36,7 +37,18 @@ type Item struct {
 
 type PaymentType struct {
 	ID   string `json:"id"`
-	Name string `json:"string"`
+	Name string `json:"name"`
+}
+
+type PaymentMethod struct {
+	ID      string   `json:"id"`
+	Name    string   `json:"name"`
+	Account *Account `json:"account,omitempty"`
+}
+
+type Account struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 type Service interface {

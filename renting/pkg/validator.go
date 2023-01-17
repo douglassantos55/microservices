@@ -82,19 +82,33 @@ func getErrorMessage(error string) string {
 		return "this field contain a number"
 	case "payment_type":
 		return "invalid payment type"
+	case "payment_method":
+		return "invalid payment method"
 	default:
 		return "something is not right about this field"
 	}
 }
 
-type PaymentMethodRule struct{}
+type paymentMethodRule struct {
+	cc *grpc.ClientConn
+}
 
-func (r PaymentMethodRule) Tag() string {
+func NewPaymentMethodRule(cc *grpc.ClientConn) paymentMethodRule {
+	return paymentMethodRule{cc}
+}
+
+func (r paymentMethodRule) Tag() string {
 	return "payment_method"
 }
 
-func (r PaymentMethodRule) Valid(value string) bool {
-	return false
+func (r paymentMethodRule) Valid(value string) bool {
+	endpoint := paymentMethodEndpoint(r.cc)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+
+	defer cancel()
+	_, err := endpoint(ctx, value)
+
+	return err == nil
 }
 
 type paymentTypeRule struct {
