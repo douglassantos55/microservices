@@ -184,8 +184,8 @@ func (s *service) GetPaymentType(id string) (*Type, error) {
 	if err != nil {
 		return nil, NewError(
 			http.StatusNotFound,
-			"payment method not found",
-			"could not find payment method",
+			"payment type not found",
+			"could not find payment type",
 		)
 	}
 	return paymentType, nil
