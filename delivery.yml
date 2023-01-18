@@ -19,7 +19,10 @@ spec:
         image: delivery:latest
         imagePullPolicy: Never
         ports:
+        - containerPort: 80
+          name: http
         - containerPort: 8080
+          name: grpc
 ---
 apiVersion: v1
 kind: Service
@@ -32,6 +35,13 @@ spec:
   ports:
     - protocol: TCP
       port: 8080
+      name: grpc
       targetPort: 8080
       nodePort: 31400
+    - protocol: TCP
+      port: 80
+      name: http
+      targetPort: 80
+      nodePort: 30400
+
 
