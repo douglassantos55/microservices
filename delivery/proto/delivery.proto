@@ -5,17 +5,14 @@ package proto;
 option go_package = "reconcip.com.br/microservices/delivery/proto";
 
 service Delivery {
-    rpc GetQuotes(GetQuotesRequest) returns (QuotesReply) {}
+    rpc GetQuote(GetQuoteRequest) returns (Quote) {}
 }
 
-message GetQuotesRequest {
+message GetQuoteRequest {
     string origin = 1;
     string destination = 2;
-    repeated Item items = 3;
-}
-
-message QuotesReply {
-    repeated Quote quotes = 1;
+    string carrier = 3;
+    repeated Item items = 4;
 }
 
 message Quote {

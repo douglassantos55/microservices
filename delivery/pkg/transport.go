@@ -3,27 +3,27 @@ package pkg
 import (
 	"context"
 
-	"github.com/go-kit/kit/transport/grpc"
+	grpctransport "github.com/go-kit/kit/transport/grpc"
 	"reconcip.com.br/microservices/delivery/proto"
 )
 
 type grpcServer struct {
 	proto.UnimplementedDeliveryServer
-	getQuotes grpc.Handler
+	getQuote grpctransport.Handler
 }
 
 func NewGRPCServer(endpoints Set) proto.DeliveryServer {
 	return &grpcServer{
-		getQuotes: grpc.NewServer(
-			endpoints.GetQuotes,
-			decodeGetQuotesRequest,
-			encodeGetQuotesResponse,
+		getQuote: grpctransport.NewServer(
+			endpoints.GetQuote,
+			decodeGetQuoteRequest,
+			encodeGetQuoteResponse,
 		),
 	}
 }
 
-func decodeGetQuotesRequest(ctx context.Context, r any) (any, error) {
-	req := r.(*proto.GetQuotesRequest)
+func decodeGetQuoteRequest(ctx context.Context, r any) (any, error) {
+	req := r.(*proto.GetQuoteRequest)
 	items := make([]Item, len(req.Items))
 
 	for i, item := range req.GetItems() {
@@ -36,25 +36,30 @@ func decodeGetQuotesRequest(ctx context.Context, r any) (any, error) {
 		}
 	}
 
-	return GetQuotesRequest{
-		Origin: req.GetOrigin(),
-		Dest:   req.GetDestination(),
-		Items:  items,
+	return GetQuoteRequest{
+		Origin:  req.GetOrigin(),
+		Dest:    req.GetDestination(),
+		Carrier: req.GetCarrier(),
+		Items:   items,
 	}, nil
 }
 
-func encodeGetQuotesResponse(ctx context.Context, res any) (any, error) {
-	reply := res.([]*Quote)
-	quotes := make([]*proto.Quote, len(reply))
+func encodeGetQuoteResponse(ctx context.Context, res any) (any, error) {
+	reply := res.(*Quote)
 
-	for i, quote := range reply {
-		quotes[i] = &proto.Quote{
-			Carrier: quote.Carrier,
-			Value:   quote.Value,
-		}
-	}
+	return &proto.Quote{
+		Carrier: reply.Carrier,
+		Value:   reply.Value,
+	}, nil
+}
 
-	return &proto.QuotesReply{Quotes: quotes}, nil
+type GetQuoteRequest struct {
+	Origin  string
+	Dest    string
+	Carrier string
+	Items   []Item
+}
+
 }
 
 type GetQuotesRequest struct {
