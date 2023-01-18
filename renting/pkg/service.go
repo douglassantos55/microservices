@@ -17,6 +17,7 @@ type Rent struct {
 	PaymentType        *PaymentType      `json:"payment_type,omitempty"`
 	CarrierID          string            `json:"carrier_id" validate:"required"`
 	CustomerID         string            `json:"customer_id" validate:"required,customer"`
+	Customer           *Customer         `json:"customer,omitempty"`
 	StartDate          time.Time         `json:"start_date" validate:"required"`
 	EndDate            time.Time         `json:"end_date" validate:"required"`
 	Items              []Item            `json:"items" validate:"required,dive"`

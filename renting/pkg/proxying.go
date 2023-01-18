@@ -174,6 +174,38 @@ func decodePaymentCondition(ctx context.Context, r any) (any, error) {
 		Installments: condition.GetInstallments(),
 	}, nil
 }
+
+func WithCustomerEndpoints(cc *grpc.ClientConn, endpoints Set) Set {
+	withCustomer := withCustomerMiddleware(cc)
+
+	return Set{
+		CreateRent: withCustomer(endpoints.CreateRent),
+	}
+}
+
+func withCustomerMiddleware(cc *grpc.ClientConn) endpoint.Middleware {
+	getCustomer := getCustomerEndpoint(cc)
+
+	return func(next endpoint.Endpoint) endpoint.Endpoint {
+		return func(ctx context.Context, r any) (any, error) {
+			res, err := next(ctx, r)
+			if err != nil {
+				return nil, err
+			}
+
+			if rent, ok := res.(*Rent); ok {
+				customer, err := getCustomer(ctx, rent.CustomerID)
+				if err == nil {
+					rent.Customer = customer.(*Customer)
+				}
+				return rent, nil
+			}
+
+			return res, nil
+		}
+	}
+}
+
 func getCustomerEndpoint(cc *grpc.ClientConn) endpoint.Endpoint {
 	return grpctransport.NewClient(
 		cc,

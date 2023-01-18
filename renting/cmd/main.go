@@ -42,9 +42,10 @@ func main() {
 	svc := pkg.NewService(validator, repository)
 
 	endpoints := pkg.CreateEndpoints(svc)
-	endpoints = pkg.WithPaymentMethodEndpoints(cc, endpoints)
-	endpoints = pkg.WithPaymentTypeEndpoints(cc, endpoints)
-	endpoints = pkg.WithPaymentConditionEndpoints(cc, endpoints)
+	endpoints = pkg.WithPaymentMethodEndpoints(pc, endpoints)
+	endpoints = pkg.WithPaymentTypeEndpoints(pc, endpoints)
+	endpoints = pkg.WithPaymentConditionEndpoints(pc, endpoints)
+	endpoints = pkg.WithCustomerEndpoints(cc, endpoints)
 
 	http.ListenAndServe(":80", pkg.NewHTTPServer(endpoints))
 }
