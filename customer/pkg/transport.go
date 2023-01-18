@@ -7,9 +7,53 @@ import (
 	"strconv"
 
 	"github.com/go-kit/kit/auth/jwt"
+	grpctransport "github.com/go-kit/kit/transport/grpc"
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/julienschmidt/httprouter"
+	"reconcip.com.br/microservices/customer/proto"
 )
+
+type grpcServer struct {
+	proto.UnimplementedCustomerServer
+	get grpctransport.Handler
+}
+
+func NewGRPCServer(endpoints Set) proto.CustomerServer {
+	return &grpcServer{
+		get: grpctransport.NewServer(
+			endpoints.Get,
+			decodeGRPCGetRequest,
+			encodeGRPCGetResponse,
+		),
+	}
+}
+
+func decodeGRPCGetRequest(ctx context.Context, r any) (any, error) {
+	req := r.(*proto.GetRequest)
+	return req.GetId(), nil
+}
+
+func encodeGRPCGetResponse(ctx context.Context, r any) (any, error) {
+	customer := r.(*Customer)
+
+	return &proto.Client{
+		Id:        customer.ID,
+		Name:      customer.Name,
+		Email:     customer.Email,
+		CpfCnpj:   customer.CpfCnpj,
+		RgInscEst: customer.RgInscEst,
+		Phone:     customer.Phone,
+		Cellphone: customer.Cellphone,
+	}, nil
+}
+
+func (s *grpcServer) Get(ctx context.Context, r *proto.GetRequest) (*proto.Client, error) {
+	_, reply, err := s.get.ServeGRPC(ctx, r)
+	if err != nil {
+		return nil, err
+	}
+	return reply.(*proto.Client), nil
+}
 
 func NewHTTPHandler(set Set) http.Handler {
 	router := httprouter.New()

@@ -2,7 +2,15 @@ syntax = "proto3";
 
 package proto;
 
-option go_package = "api.example.com/customer/proto";
+option go_package = "reconcip.com.br/microservices/customer/proto";
+
+service Customer {
+    rpc Get(GetRequest) returns (Client) {}
+}
+
+message GetRequest {
+    string id = 1;
+}
 
 message VerifyReply {
     User user = 1;
@@ -12,6 +20,16 @@ message VerifyReply {
 message User {
     string id = 1;
     string name = 2;
+}
+
+message Client {
+    string id = 1;
+    string name = 2;
+    string email = 3;
+    string cpf_cnpj = 4;
+    string rg_insc_est = 5;
+    string phone = 6;
+    string cellphone = 7;
 }
 
 message Error {

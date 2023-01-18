@@ -20,6 +20,9 @@ spec:
         imagePullPolicy: Never
         ports:
         - containerPort: 80
+          name: http
+        - containerPort: 8080
+          name: grpc
         env:
         - name: AUTH_SERVICE_URL
           value: auth-service
@@ -42,7 +45,13 @@ spec:
     app: customer
   ports:
     - protocol: TCP
+      name: http
       port: 80
       targetPort: 80
       nodePort: 30100
+    - protocol: TCP
+      name: grpc
+      port: 8080
+      targetPort: 8080
+      nodePort: 31100
 
