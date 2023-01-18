@@ -40,3 +40,13 @@ message Condition {
     Type payment_type = 4;
     repeated int32 installments = 5;
 }
+
+message Customer {
+    string id = 1;
+    string name = 2;
+    string email = 3;
+    string cpf_cnpj = 4;
+    string rg_insc_est = 5;
+    string phone = 6;
+    string cellphone = 7;
+}

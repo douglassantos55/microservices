@@ -21,15 +21,22 @@ func main() {
 	}
 
 	paymentUrl := os.Getenv("PAYMENT_SERVICE_URL")
-	cc, err := grpc.Dial(paymentUrl+":8080", grpc.WithInsecure())
+	pc, err := grpc.Dial(paymentUrl+":8080", grpc.WithInsecure())
+	if err != nil {
+		panic(err)
+	}
+
+	customerUrl := os.Getenv("CUSTOMER_SERVICE_URL")
+	cc, err := grpc.Dial(customerUrl+":8080", grpc.WithInsecure())
 	if err != nil {
 		panic(err)
 	}
 
 	validator := pkg.NewValidator([]pkg.ValidationRule{
-		pkg.NewPaymentTypeRule(cc),
-		pkg.NewPaymentMethodRule(cc),
-		pkg.NewPaymentConditionRule(cc),
+		pkg.NewPaymentTypeRule(pc),
+		pkg.NewPaymentMethodRule(pc),
+		pkg.NewPaymentConditionRule(pc),
+		pkg.NewCustomerRule(cc),
 	})
 
 	svc := pkg.NewService(validator, repository)

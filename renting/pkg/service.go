@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"context"
 	"net/http"
 	"time"
 )
@@ -15,7 +16,7 @@ type Rent struct {
 	PaymentTypeID      string            `json:"payment_type_id" validate:"required,payment_type"`
 	PaymentType        *PaymentType      `json:"payment_type,omitempty"`
 	CarrierID          string            `json:"carrier_id" validate:"required"`
-	CustomerID         string            `json:"customer_id" validate:"required"`
+	CustomerID         string            `json:"customer_id" validate:"required,customer"`
 	StartDate          time.Time         `json:"start_date" validate:"required"`
 	EndDate            time.Time         `json:"end_date" validate:"required"`
 	Items              []Item            `json:"items" validate:"required,dive"`
@@ -53,6 +54,16 @@ type PaymentCondition struct {
 	Increment    float32      `json:"increment"`
 	Installments []int32      `json:"installments"`
 	PaymentType  *PaymentType `json:"payment_type"`
+}
+
+type Customer struct {
+	ID        string `json:"id"`
+	Name      string `json:"name"`
+	Email     string `json:"email" validate:"omitempty,email"`
+	CpfCnpj   string `json:"cpf_cnpj" validate:"required,cpf_cnpj"`
+	RgInscEst string `json:"rg_insc_est"`
+	Phone     string `json:"phone"`
+	Cellphone string `json:"cellphone"`
 }
 
 type Account struct {

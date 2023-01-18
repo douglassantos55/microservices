@@ -84,6 +84,8 @@ func getErrorMessage(error string) string {
 		return "invalid payment type"
 	case "payment_method":
 		return "invalid payment method"
+	case "customer":
+		return "invalid customer"
 	default:
 		return "something is not right about this field"
 	}
@@ -155,12 +157,24 @@ func (r paymentConditionRule) Valid(value string) bool {
 	return err == nil
 }
 
-type CustomerRule struct{}
+type customerRule struct {
+	cc *grpc.ClientConn
+}
 
-func (r CustomerRule) Tag() string {
+func NewCustomerRule(cc *grpc.ClientConn) customerRule {
+	return customerRule{cc}
+}
+
+func (r customerRule) Tag() string {
 	return "customer"
 }
 
-func (r CustomerRule) Valid(value string) bool {
-	return false
+func (r customerRule) Valid(value string) bool {
+	endpoint := getCustomerEndpoint(r.cc)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+
+	defer cancel()
+	_, err := endpoint(ctx, value)
+
+	return err == nil
 }

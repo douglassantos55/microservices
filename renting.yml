@@ -27,6 +27,8 @@ spec:
           value: delivery-service
         - name: PAYMENT_SERVICE_URL
           value: payment-service
+        - name: CUSTOMER_SERVICE_URL
+          value: customer-service
         - name: MONGODB_URL
           value: mongodb-service
         - name: MONGODB_USER

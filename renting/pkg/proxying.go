@@ -174,3 +174,27 @@ func decodePaymentCondition(ctx context.Context, r any) (any, error) {
 		Installments: condition.GetInstallments(),
 	}, nil
 }
+func getCustomerEndpoint(cc *grpc.ClientConn) endpoint.Endpoint {
+	return grpctransport.NewClient(
+		cc,
+		"proto.Customer",
+		"Get",
+		encodeRequest,
+		decodeCustomer,
+		&proto.Customer{},
+	).Endpoint()
+}
+
+func decodeCustomer(ctx context.Context, r any) (any, error) {
+	reply := r.(*proto.Customer)
+
+	return &Customer{
+		ID:        reply.GetId(),
+		Name:      reply.GetName(),
+		Email:     reply.GetEmail(),
+		CpfCnpj:   reply.GetCpfCnpj(),
+		RgInscEst: reply.GetRgInscEst(),
+		Phone:     reply.GetPhone(),
+		Cellphone: reply.GetCellphone(),
+	}, nil
+}
