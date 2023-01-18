@@ -6,8 +6,9 @@ import (
 )
 
 var (
-	ErrNoItems    = errors.New("no items for delivery")
-	ErrNoCarriers = errors.New("no carriers")
+	ErrNoItems         = errors.New("no items for delivery")
+	ErrNoCarriers      = errors.New("no carriers")
+	ErrCarrierNotFound = errors.New("carrier not found")
 )
 
 type Quote struct {
@@ -24,15 +25,35 @@ type Item struct {
 }
 
 type Service interface {
+	GetQuote(origin, dest, carrier string, items []Item) (*Quote, error)
 	GetQuotes(origin, destination string, items []Item) ([]*Quote, error)
 }
 
 type service struct {
-	carriers []Carrier
+	carriers map[string]Carrier
 }
 
 func NewService(carriers []Carrier) Service {
-	return &service{carriers}
+	service := &service{
+		carriers: make(map[string]Carrier),
+	}
+	for _, carrier := range carriers {
+		service.carriers[carrier.String()] = carrier
+	}
+	return service
+}
+
+func (s *service) GetQuote(origin, dest, carrierName string, items []Item) (*Quote, error) {
+	carrier, ok := s.carriers[carrierName]
+	if !ok {
+		return nil, ErrCarrierNotFound
+	}
+
+	if len(items) == 0 {
+		return nil, ErrNoItems
+	}
+
+	return carrier.GetQuote(origin, dest, items)
 }
 
 func (s *service) GetQuotes(origin, destination string, items []Item) ([]*Quote, error) {
