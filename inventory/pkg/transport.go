@@ -127,7 +127,8 @@ func encodeDeleteResponse(ctx context.Context, w http.ResponseWriter, r any) err
 
 type grpcServer struct {
 	proto.UnimplementedInventoryServer
-	reduceStock grpc.Handler
+	reduceStock  grpc.Handler
+	getEquipment grpc.Handler
 }
 
 func NewGRPCServer(endpoints Set) proto.InventoryServer {
@@ -137,7 +138,20 @@ func NewGRPCServer(endpoints Set) proto.InventoryServer {
 			decodeReduceStockRequest,
 			encodeReduceStockResponse,
 		),
+		getEquipment: grpc.NewServer(
+			endpoints.Get,
+			decodeGetRequest,
+			encodeEquipmentResponse,
+		),
 	}
+}
+
+func (s *grpcServer) GetEquipment(ctx context.Context, r *proto.GetRequest) (*proto.Equipment, error) {
+	_, reply, err := s.getEquipment.ServeGRPC(ctx, r)
+	if err != nil {
+		return nil, err
+	}
+	return reply.(*proto.Equipment), nil
 }
 
 func (s *grpcServer) ReduceStock(ctx context.Context, req *proto.ReduceStockRequest) (*proto.ReduceStockReply, error) {
@@ -164,4 +178,50 @@ func encodeReduceStockResponse(ctx context.Context, res any) (any, error) {
 type ReduceStockRequest struct {
 	Equip string `json:"equip_id"`
 	Qty   int64  `json:"qty"`
+}
+
+func decodeGetRequest(ctx context.Context, r any) (any, error) {
+	req := r.(*proto.GetRequest)
+	return req.GetId(), nil
+}
+
+func encodeEquipmentResponse(ctx context.Context, r any) (any, error) {
+	equipment := r.(*Equipment)
+
+	supplier := &proto.Supplier{
+		Id:         equipment.Supplier.ID,
+		SocialName: equipment.Supplier.SocialName,
+		LegalName:  equipment.Supplier.LegalName,
+		Email:      equipment.Supplier.Email,
+		Website:    equipment.Supplier.Website,
+		Cnpj:       equipment.Supplier.Cnpj,
+		InscEst:    equipment.Supplier.InscEst,
+		Phone:      equipment.Supplier.Phone,
+	}
+
+	rentingValues := make([]*proto.RentingValue, len(equipment.RentingValues))
+	for i, value := range equipment.RentingValues {
+		rentingValues[i] = &proto.RentingValue{
+			Value: value.Value,
+			Period: &proto.Period{
+				Id:      value.Period.ID,
+				Name:    value.Period.Name,
+				QtyDays: value.Period.QtyDays,
+			},
+		}
+	}
+
+	return &proto.Equipment{
+		Id:             equipment.ID,
+		Description:    equipment.Description,
+		Stock:          int64(equipment.Stock),
+		EffectiveStock: int64(equipment.EffectiveStock),
+		Weight:         equipment.Weight,
+		UnitValue:      equipment.UnitValue,
+		PurchaseValue:  equipment.PurchaseValue,
+		ReplaceValue:   equipment.ReplaceValue,
+		MinQty:         int64(equipment.MinQty),
+		Supplier:       supplier,
+		RentingValues:  rentingValues,
+	}, nil
 }

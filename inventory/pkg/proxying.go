@@ -144,7 +144,7 @@ func encodeRequest(ctx context.Context, r any) (any, error) {
 	if !ok || supplierID == "" {
 		return nil, errors.New("invalid supplier id")
 	}
-	return &proto.GetRequest{SupplierID: supplierID}, nil
+	return &proto.GetRequest{Id: supplierID}, nil
 }
 
 func decodeResponse(ctx context.Context, r any) (any, error) {

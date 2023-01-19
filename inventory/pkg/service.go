@@ -3,18 +3,18 @@ package pkg
 import "net/http"
 
 type Equipment struct {
-	ID             string         `json:"id" bson:"_id,omitempty" validate:"omitempty,required"`
-	Description    string         `json:"description" validate:"required"`
-	Stock          int            `json:"in_stock" validate:"omitempty,number"`
-	EffectiveStock int            `json:"effective_qty" validate:"omitempty,number"`
-	Weight         float64        `json:"weight" validate:"omitempty,numeric"`
-	UnitValue      float64        `json:"unit_value" validate:"omitempty,numeric"`
-	PurchaseValue  float64        `json:"purchase_value" validate:"omitempty,numeric"`
-	ReplaceValue   float64        `json:"replace_value" validate:"omitempty,numeric"`
-	MinQty         int            `json:"min_qty" validate:"omitempty,number"`
-	SupplierID     string         `json:"supplier_id,omitempty" validate:"omitempty,supplier"`
-	Supplier       *Supplier      `json:"supplier"`
-	RentingValues  []RentingValue `json:"renting_values" validate:"required,dive"`
+	ID             string          `json:"id" bson:"_id,omitempty" validate:"omitempty,required"`
+	Description    string          `json:"description" validate:"required"`
+	Stock          int             `json:"in_stock" validate:"omitempty,number"`
+	EffectiveStock int             `json:"effective_qty" validate:"omitempty,number"`
+	Weight         float64         `json:"weight" validate:"omitempty,numeric"`
+	UnitValue      float64         `json:"unit_value" validate:"omitempty,numeric"`
+	PurchaseValue  float64         `json:"purchase_value" validate:"omitempty,numeric"`
+	ReplaceValue   float64         `json:"replace_value" validate:"omitempty,numeric"`
+	MinQty         int             `json:"min_qty" validate:"omitempty,number"`
+	SupplierID     string          `json:"supplier_id,omitempty" validate:"omitempty,supplier"`
+	Supplier       *Supplier       `json:"supplier"`
+	RentingValues  []*RentingValue `json:"renting_values" validate:"required,dive"`
 }
 
 type Supplier struct {
@@ -41,7 +41,14 @@ type Address struct {
 
 type RentingValue struct {
 	PeriodID string  `json:"period_id" validate:"required"`
+	Period   *Period `json:"period,omitempty"`
 	Value    float64 `json:"value"`
+}
+
+type Period struct {
+	ID      string `json:"id"`
+	Name    string `json:"name"`
+	QtyDays int32  `json:"qty_days"`
 }
 
 type Service interface {
