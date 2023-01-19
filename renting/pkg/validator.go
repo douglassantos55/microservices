@@ -88,6 +88,8 @@ func getErrorMessage(error string) string {
 		return "invalid payment method"
 	case "customer":
 		return "invalid customer"
+	case "equipment":
+		return "invalid equipment"
 	default:
 		return "something is not right about this field"
 	}
@@ -173,6 +175,28 @@ func (r customerRule) Tag() string {
 
 func (r customerRule) Valid(value string) bool {
 	endpoint := getCustomerEndpoint(r.cc)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+
+	defer cancel()
+	_, err := endpoint(ctx, value)
+
+	return err == nil
+}
+
+type equipmentRule struct {
+	cc *grpc.ClientConn
+}
+
+func NewEquipmentRule(cc *grpc.ClientConn) equipmentRule {
+	return equipmentRule{cc}
+}
+
+func (r equipmentRule) Tag() string {
+	return "equipment"
+}
+
+func (r equipmentRule) Valid(value string) bool {
+	endpoint := getEquipmentEndpoint(r.cc)
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 
 	defer cancel()

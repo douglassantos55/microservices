@@ -325,3 +325,24 @@ type QuoteItem struct {
 	Height float64
 	Depth  float64
 }
+
+func getEquipmentEndpoint(cc *grpc.ClientConn) endpoint.Endpoint {
+	return grpctransport.NewClient(
+		cc,
+		"proto.Inventory",
+		"GetEquipment",
+		encodeRequest,
+		decodeEquipment,
+		&proto.Equipment{},
+	).Endpoint()
+}
+
+func decodeEquipment(ctx context.Context, r any) (any, error) {
+	equipment := r.(*proto.Equipment)
+
+	return Equipment{
+		ID:          equipment.GetId(),
+		Description: equipment.GetDescription(),
+		Weight:      equipment.GetWeight(),
+	}, nil
+}

@@ -32,11 +32,18 @@ func main() {
 		panic(err)
 	}
 
+	inventoryUrl := os.Getenv("INVENTORY_SERVICE_URL")
+	ic, err := grpc.Dial(inventoryUrl+":8080", grpc.WithInsecure())
+	if err != nil {
+		panic(err)
+	}
+
 	validator := pkg.NewValidator([]pkg.ValidationRule{
 		pkg.NewPaymentTypeRule(pc),
 		pkg.NewPaymentMethodRule(pc),
 		pkg.NewPaymentConditionRule(pc),
 		pkg.NewCustomerRule(cc),
+		pkg.NewEquipmentRule(ic),
 	})
 
 	deliveryUrl := os.Getenv("DELIVERY_SERVICE_URL")

@@ -73,3 +73,10 @@ message Customer {
     string phone = 6;
     string cellphone = 7;
 }
+
+// inventory messages
+message Equipment {
+    string id = 1;
+    string description = 2;
+    double weight = 3;
+}

@@ -29,6 +29,8 @@ spec:
           value: payment-service
         - name: CUSTOMER_SERVICE_URL
           value: customer-service
+        - name: INVENTORY_SERVICE_URL
+          value: inventory-service
         - name: MONGODB_URL
           value: mongodb-service
         - name: MONGODB_USER

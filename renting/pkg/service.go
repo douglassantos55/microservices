@@ -33,7 +33,7 @@ type Rent struct {
 
 type Item struct {
 	ID          string `json:"id" bson:"_id,omitempty"`
-	EquipmentID string `json:"equipment_id" validate:"required"`
+	EquipmentID string `json:"equipment_id" validate:"required,equipment"`
 	Qty         int    `json:"qty" validate:"required,gt=0"`
 }
 
@@ -64,6 +64,12 @@ type Customer struct {
 	RgInscEst string `json:"rg_insc_est"`
 	Phone     string `json:"phone"`
 	Cellphone string `json:"cellphone"`
+}
+
+type Equipment struct {
+	ID          string  `json:"id"`
+	Description string  `json:"description"`
+	Weight      float64 `json:"weight"`
 }
 
 type Account struct {
