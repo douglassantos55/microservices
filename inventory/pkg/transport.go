@@ -187,16 +187,17 @@ func decodeGetRequest(ctx context.Context, r any) (any, error) {
 
 func encodeEquipmentResponse(ctx context.Context, r any) (any, error) {
 	equipment := r.(*Equipment)
+	supplier := &proto.Supplier{}
 
-	supplier := &proto.Supplier{
-		Id:         equipment.Supplier.ID,
-		SocialName: equipment.Supplier.SocialName,
-		LegalName:  equipment.Supplier.LegalName,
-		Email:      equipment.Supplier.Email,
-		Website:    equipment.Supplier.Website,
-		Cnpj:       equipment.Supplier.Cnpj,
-		InscEst:    equipment.Supplier.InscEst,
-		Phone:      equipment.Supplier.Phone,
+	if equipment.Supplier != nil {
+		supplier.Id = equipment.Supplier.ID
+		supplier.SocialName = equipment.Supplier.SocialName
+		supplier.LegalName = equipment.Supplier.LegalName
+		supplier.Email = equipment.Supplier.Email
+		supplier.Website = equipment.Supplier.Website
+		supplier.Cnpj = equipment.Supplier.Cnpj
+		supplier.InscEst = equipment.Supplier.InscEst
+		supplier.Phone = equipment.Supplier.Phone
 	}
 
 	rentingValues := make([]*proto.RentingValue, len(equipment.RentingValues))
