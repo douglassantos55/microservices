@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/go-kit/kit/auth/jwt"
 	"github.com/go-kit/kit/transport/grpc"
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/julienschmidt/httprouter"
@@ -108,42 +109,51 @@ func encodeGRPCConditionReply(ctx context.Context, r any) (any, error) {
 func NewHTTPHandler(endpoints Set) http.Handler {
 	router := httprouter.New()
 
-	makePaymentMethodRoutes("/methods", router, endpoints)
-	makePaymentTypeRoutes("/types", router, endpoints)
-	makePaymentConditionRoutes("/conditions", router, endpoints)
+	options := httptransport.ServerBefore(
+		jwt.HTTPToContext(),
+	)
+
+	makePaymentMethodRoutes("/methods", router, endpoints, options)
+	makePaymentTypeRoutes("/types", router, endpoints, options)
+	makePaymentConditionRoutes("/conditions", router, endpoints, options)
 
 	return router
 }
 
-func makePaymentMethodRoutes(prefix string, router *httprouter.Router, endpoints Set) {
+func makePaymentMethodRoutes(prefix string, router *httprouter.Router, endpoints Set, options httptransport.ServerOption) {
 	router.Handler(http.MethodPost, prefix+"/", httptransport.NewServer(
 		endpoints.CreatePaymentMethod,
 		decodeCreatePaymentMethodRequest,
 		httptransport.EncodeJSONResponse,
+		options,
 	))
 
 	router.Handler(http.MethodGet, prefix+"/", httptransport.NewServer(
 		endpoints.ListPaymentMethods,
 		httptransport.NopRequestDecoder,
 		httptransport.EncodeJSONResponse,
+		options,
 	))
 
 	router.Handler(http.MethodPut, prefix+"/:id", httptransport.NewServer(
 		endpoints.UpdatePaymentMethod,
 		decodeUpdatePaymentMethodRequest,
 		httptransport.EncodeJSONResponse,
+		options,
 	))
 
 	router.Handler(http.MethodDelete, prefix+"/:id", httptransport.NewServer(
 		endpoints.DeletePaymentMethod,
 		GetRouteParamDecoder("id"),
 		encodeDeleteResponse,
+		options,
 	))
 
 	router.Handler(http.MethodGet, prefix+"/:id", httptransport.NewServer(
 		endpoints.GetPaymentMethod,
 		GetRouteParamDecoder("id"),
 		httptransport.EncodeJSONResponse,
+		options,
 	))
 }
 
@@ -196,35 +206,40 @@ func encodeDeleteResponse(ctx context.Context, r http.ResponseWriter, res any) e
 	return nil
 }
 
-func makePaymentTypeRoutes(prefix string, router *httprouter.Router, endpoints Set) {
+func makePaymentTypeRoutes(prefix string, router *httprouter.Router, endpoints Set, options httptransport.ServerOption) {
 	router.Handler(http.MethodPost, prefix+"/", httptransport.NewServer(
 		endpoints.CreatePaymentType,
 		decodeCreatePaymentTypeRequest,
 		httptransport.EncodeJSONResponse,
+		options,
 	))
 
 	router.Handler(http.MethodGet, prefix+"/", httptransport.NewServer(
 		endpoints.ListPaymentTypes,
 		httptransport.NopRequestDecoder,
 		httptransport.EncodeJSONResponse,
+		options,
 	))
 
 	router.Handler(http.MethodPut, prefix+"/:id", httptransport.NewServer(
 		endpoints.UpdatePaymentType,
 		decodeUpdatePaymentTypeRequest,
 		httptransport.EncodeJSONResponse,
+		options,
 	))
 
 	router.Handler(http.MethodDelete, prefix+"/:id", httptransport.NewServer(
 		endpoints.DeletePaymentType,
 		GetRouteParamDecoder("id"),
 		encodeDeleteResponse,
+		options,
 	))
 
 	router.Handler(http.MethodGet, prefix+"/:id", httptransport.NewServer(
 		endpoints.GetPaymentType,
 		GetRouteParamDecoder("id"),
 		httptransport.EncodeJSONResponse,
+		options,
 	))
 }
 
@@ -263,35 +278,40 @@ type UpdatePaymentTypeRequest struct {
 	Data Type
 }
 
-func makePaymentConditionRoutes(prefix string, router *httprouter.Router, endpoints Set) {
+func makePaymentConditionRoutes(prefix string, router *httprouter.Router, endpoints Set, options httptransport.ServerOption) {
 	router.Handler(http.MethodPost, prefix+"/", httptransport.NewServer(
 		endpoints.CreatePaymentCondition,
 		decodeCreatePaymentConditionRequest,
 		httptransport.EncodeJSONResponse,
+		options,
 	))
 
 	router.Handler(http.MethodGet, prefix+"/", httptransport.NewServer(
 		endpoints.ListPaymentConditions,
 		httptransport.NopRequestDecoder,
 		httptransport.EncodeJSONResponse,
+		options,
 	))
 
 	router.Handler(http.MethodPut, prefix+"/:id", httptransport.NewServer(
 		endpoints.UpdatePaymentCondition,
 		decodeUpdateConditionRequest,
 		httptransport.EncodeJSONResponse,
+		options,
 	))
 
 	router.Handler(http.MethodDelete, prefix+"/:id", httptransport.NewServer(
 		endpoints.DeletePaymentCondition,
 		GetRouteParamDecoder("id"),
 		encodeDeleteResponse,
+		options,
 	))
 
 	router.Handler(http.MethodGet, prefix+"/:id", httptransport.NewServer(
 		endpoints.GetPaymentCondition,
 		GetRouteParamDecoder("id"),
 		httptransport.EncodeJSONResponse,
+		options,
 	))
 }
 

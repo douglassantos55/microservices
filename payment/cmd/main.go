@@ -41,7 +41,15 @@ func main() {
 
 	go func(endpoints pkg.Set) {
 		defer wg.Done()
-		http.ListenAndServe(":80", pkg.NewHTTPHandler(endpoints))
+
+		authUrl := os.Getenv("AUTH_SERVICE_URL")
+		cc, err := grpc.Dial(authUrl+":8080", grpc.WithInsecure())
+		if err != nil {
+			panic(err)
+		}
+
+		verifyEndpoints := pkg.VerifyEndpoints(cc, endpoints)
+		http.ListenAndServe(":80", pkg.NewHTTPHandler(verifyEndpoints))
 	}(endpoints)
 
 	go func(endpoints pkg.Set) {

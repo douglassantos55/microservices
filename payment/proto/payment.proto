@@ -46,3 +46,20 @@ message Condition {
     Type payment_type = 4;
     repeated int32 installments = 5;
 }
+
+// auth messages
+message VerifyReply {
+    User user = 1;
+    Error err = 2;
+}
+
+message User {
+    string id = 1;
+    string name = 2;
+}
+
+message Error {
+    uint32 status = 1;
+    string title = 2;
+    string detail = 3;
+}
