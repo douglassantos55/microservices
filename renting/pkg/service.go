@@ -1,7 +1,6 @@
 package pkg
 
 import (
-	"context"
 	"net/http"
 	"time"
 )
@@ -27,8 +26,8 @@ type Rent struct {
 	Bill               float64           `json:"bill" validate:"required_with=PaidValue,ltefield=PaidValue"`
 	Observations       string            `json:"observations"`
 	CheckInfo          string            `json:"check_info"`
-	DeliveryValue      float64           `json:"delivery_value" validate:"omitempty,required_with=CarrierID"`
-	DeliveryAddress    string            `json:"delivery_address" validate:"omitempty,required_with=CarrierID"`
+	DeliveryValue      float64           `json:"delivery_value"`
+	DeliveryAddress    string            `json:"delivery_address" validate:"required_with=CarrierID"`
 	UsageAddress       string            `json:"usage_address"`
 }
 
@@ -72,6 +71,11 @@ type Account struct {
 	Name string `json:"name"`
 }
 
+type Quote struct {
+	Carrier string
+	Value   float64
+}
+
 type Service interface {
 	CreateRent(Rent) (*Rent, error)
 }
@@ -79,15 +83,31 @@ type Service interface {
 type service struct {
 	validator  Validator
 	repository Repository
+	delivery   DeliveryService
 }
 
-func NewService(validator Validator, repository Repository) *service {
-	return &service{validator, repository}
+type DeliveryService interface {
+	GetQuote(origin, dest, carrier string, items []Item) (*Quote, error)
+}
+
+func NewService(validator Validator, repository Repository, delivery DeliveryService) *service {
+	return &service{validator, repository, delivery}
 }
 
 func (s *service) CreateRent(data Rent) (*Rent, error) {
 	if err := s.validator.Validate(data); err != nil {
 		return nil, err
+	}
+
+	if data.CarrierID != "" {
+		origin := "rua monte alegre do sul, mogi guacu, sp"
+		quote, err := s.delivery.GetQuote(origin, data.DeliveryAddress, data.CarrierID, data.Items)
+
+		if err != nil {
+			return nil, err
+		}
+
+		data.DeliveryValue = quote.Value
 	}
 
 	rent, err := s.repository.CreateRent(data)

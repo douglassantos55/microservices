@@ -39,7 +39,13 @@ func main() {
 		pkg.NewCustomerRule(cc),
 	})
 
-	svc := pkg.NewService(validator, repository)
+	deliveryUrl := os.Getenv("DELIVERY_SERVICE_URL")
+	delivery, err := pkg.NewDeliveryService(deliveryUrl + ":8080")
+	if err != nil {
+		panic(err)
+	}
+
+	svc := pkg.NewService(validator, repository, delivery)
 
 	endpoints := pkg.CreateEndpoints(svc)
 	endpoints = pkg.WithPaymentMethodEndpoints(pc, endpoints)

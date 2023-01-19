@@ -82,6 +82,8 @@ func getErrorMessage(error string) string {
 		return "this field contain a number"
 	case "payment_type":
 		return "invalid payment type"
+	case "payment_condition":
+		return "invalid payment condition"
 	case "payment_method":
 		return "invalid payment method"
 	case "customer":

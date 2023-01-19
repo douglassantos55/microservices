@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"context"
+	"time"
 
 	"github.com/go-kit/kit/endpoint"
 	grpctransport "github.com/go-kit/kit/transport/grpc"
@@ -229,4 +230,98 @@ func decodeCustomer(ctx context.Context, r any) (any, error) {
 		Phone:     reply.GetPhone(),
 		Cellphone: reply.GetCellphone(),
 	}, nil
+}
+
+type grpcDeliveryService struct {
+	conn *grpc.ClientConn
+}
+
+func NewDeliveryService(url string) (DeliveryService, error) {
+	conn, err := grpc.Dial(url, grpc.WithInsecure())
+	if err != nil {
+		return nil, err
+	}
+	return &grpcDeliveryService{conn}, nil
+}
+
+func (s *grpcDeliveryService) GetQuote(origin, dest, carrier string, items []Item) (*Quote, error) {
+	quoteItems := make([]QuoteItem, len(items))
+	for i, item := range items {
+		quoteItems[i] = QuoteItem{Qty: int64(item.Qty)}
+	}
+
+	getQuote := getQuoteEndpoint(s.conn)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	quote, err := getQuote(ctx, QuoteRequest{
+		Origin:  origin,
+		Dest:    dest,
+		Carrier: carrier,
+		Items:   quoteItems,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return quote.(*Quote), nil
+}
+
+func getQuoteEndpoint(cc *grpc.ClientConn) endpoint.Endpoint {
+	return grpctransport.NewClient(
+		cc,
+		"proto.Delivery",
+		"GetQuote",
+		encodeQuoteRequest,
+		decodeQuoteResponse,
+		&proto.Quote{},
+	).Endpoint()
+}
+
+func encodeQuoteRequest(ctx context.Context, r any) (any, error) {
+	req := r.(QuoteRequest)
+	items := make([]*proto.Item, len(req.Items))
+
+	for i, item := range req.Items {
+		items[i] = &proto.Item{
+			Qty:    item.Qty,
+			Weight: item.Weight,
+			Width:  item.Width,
+			Height: item.Height,
+			Depth:  item.Depth,
+		}
+	}
+
+	return &proto.GetQuoteRequest{
+		Origin:      req.Origin,
+		Destination: req.Dest,
+		Carrier:     req.Carrier,
+		Items:       items,
+	}, nil
+}
+
+func decodeQuoteResponse(ctx context.Context, r any) (any, error) {
+	reply := r.(*proto.Quote)
+
+	return &Quote{
+		Carrier: reply.GetCarrier(),
+		Value:   reply.GetValue(),
+	}, nil
+}
+
+type QuoteRequest struct {
+	Origin  string
+	Dest    string
+	Carrier string
+	Items   []QuoteItem
+}
+
+type QuoteItem struct {
+	Qty    int64
+	Weight float64
+	Width  float64
+	Height float64
+	Depth  float64
 }

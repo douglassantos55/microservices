@@ -4,6 +4,28 @@ package proto;
 
 option go_package = "reconcip.com.br/microservices/renting/proto";
 
+// delivery messages
+message GetQuoteRequest {
+    string origin = 1;
+    string destination = 2;
+    string carrier = 3;
+    repeated Item items = 4;
+}
+
+message Quote {
+    string carrier = 1;
+    double value = 2;
+}
+
+message Item {
+    int64 qty = 1;
+    double weight = 2;
+    double width = 3;
+    double height = 4;
+    double depth = 5;
+}
+
+// payment messages
 message GetRequest {
     string id = 1;
 }
@@ -41,6 +63,7 @@ message Condition {
     repeated int32 installments = 5;
 }
 
+// customer messages
 message Customer {
     string id = 1;
     string name = 2;
