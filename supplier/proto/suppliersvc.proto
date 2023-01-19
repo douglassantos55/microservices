@@ -9,7 +9,7 @@ service SupplierService {
 }
 
 message GetRequest {
-    string SupplierID = 1;
+    string id = 1;
 }
 
 message Supplier {

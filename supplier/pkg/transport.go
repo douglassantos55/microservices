@@ -144,7 +144,7 @@ func (s *grpcServer) Get(ctx context.Context, req *proto.GetRequest) (*proto.Sup
 
 func decodeGRPCGetRequest(ctx context.Context, req any) (any, error) {
 	request := req.(*proto.GetRequest)
-	return request.SupplierID, nil
+	return request.GetId(), nil
 }
 
 func encodeGRPCGetResponse(ctx context.Context, res any) (any, error) {
