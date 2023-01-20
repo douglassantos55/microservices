@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"encoding/json"
 	"net/http"
 	"time"
 )
@@ -19,7 +20,6 @@ type Rent struct {
 	Customer           *Customer         `json:"customer,omitempty"`
 	StartDate          time.Time         `json:"start_date" validate:"required"`
 	EndDate            time.Time         `json:"end_date" validate:"required"`
-	QtyDays            int               `json:"qty_days" validate:"required"`
 	Items              []*Item           `json:"items" validate:"required,dive"`
 	Discount           float64           `json:"discount" validate:"omitempty,gt=0"`
 	PaidValue          float64           `json:"paid_value" validate:"omitempty,gt=0"`
@@ -31,11 +31,98 @@ type Rent struct {
 	UsageAddress       string            `json:"usage_address"`
 }
 
+func (r *Rent) MarshalJSON() ([]byte, error) {
+	return json.Marshal(map[string]any{
+		"id":                r.ID,
+		"period":            r.PeriodID,
+		"start_date":        r.StartDate.Local(),
+		"end_date":          r.EndDate.Local(),
+		"qty_days":          r.GetQtyDays(),
+		"customer":          r.Customer,
+		"carrier":           r.CarrierID,
+		"observations":      r.Observations,
+		"usage_address":     r.UsageAddress,
+		"deliver_address":   r.DeliveryAddress,
+		"delivery_value":    r.DeliveryValue,
+		"subtotal":          r.GetSubtotal(),
+		"discount":          r.Discount,
+		"total":             r.GetTotal(),
+		"paid_value":        r.PaidValue,
+		"bill":              r.Bill,
+		"change":            r.GetChange(),
+		"remaining":         r.GetRemaining(),
+		"check_info":        r.CheckInfo,
+		"total_weight":      r.GetTotalWeight(),
+		"total_unit_value":  r.GetTotalUnitValue(),
+		"total_pieces":      r.GetTotalPieces(),
+		"payment_method":    r.PaymentMethod,
+		"payment_type":      r.PaymentType,
+		"payment_condition": r.PaymentCondition,
+		"items":             r.Items,
+	})
+}
+
+func (r *Rent) GetQtyDays() int {
+	return int(r.EndDate.Sub(r.StartDate).Hours() / 24)
+}
+
+func (r *Rent) GetTotal() float64 {
+	return r.GetSubtotal() + r.DeliveryValue - r.Discount
+}
+
+func (r *Rent) GetChange() float64 {
+	return r.Bill - r.PaidValue
+}
+
+func (r *Rent) GetRemaining() float64 {
+	return r.GetTotal() - r.PaidValue
+}
+
+func (r *Rent) GetSubtotal() float64 {
+	total := 0.0
+	for _, item := range r.Items {
+		total += item.GetSubtotal(r.PeriodID)
+	}
+	return total
+}
+
+func (r *Rent) GetTotalWeight() float64 {
+	total := 0.0
+	for _, item := range r.Items {
+		total += item.GetSubtotalWeight()
+	}
+	return total
+}
+
+func (r *Rent) GetTotalUnitValue() float64 {
+	total := 0.0
+	for _, item := range r.Items {
+		total += float64(item.Qty) * item.Equipment.UnitValue
+	}
+	return total
+}
+
+func (r *Rent) GetTotalPieces() int {
+	total := 0
+	for _, item := range r.Items {
+		total += item.Qty
+	}
+	return total
+}
+
 type Item struct {
 	ID          string     `json:"id" bson:"_id,omitempty"`
 	EquipmentID string     `json:"equipment_id" validate:"required,equipment"`
 	Equipment   *Equipment `json:"equipment"`
 	Qty         int        `json:"qty" validate:"required,gt=0"`
+}
+
+func (i *Item) GetSubtotal(period string) float64 {
+	return float64(i.Qty) * i.Equipment.GetRentingValue(period)
+}
+
+func (i *Item) GetSubtotalWeight() float64 {
+	return float64(i.Qty) * i.Equipment.Weight
 }
 
 type PaymentType struct {
@@ -73,6 +160,27 @@ type Equipment struct {
 	Weight        float64         `json:"weight"`
 	UnitValue     float64         `json:"unit_value"`
 	RentingValues []*RentingValue `json:"renting_values" validate:"required,dive"`
+}
+
+func (e *Equipment) GetRentingValue(period string) float64 {
+	for _, value := range e.RentingValues {
+		if value.PeriodID == period {
+			return value.Value
+		}
+	}
+	return 0
+}
+
+type RentingValue struct {
+	PeriodID string  `json:"period_id"`
+	Period   *Period `json:"period,omitempty"`
+	Value    float64 `json:"value"`
+}
+
+type Period struct {
+	ID      string `json:"id"`
+	Name    string `json:"name"`
+	QtyDays int32  `json:"qty_days"`
 }
 
 type Account struct {
