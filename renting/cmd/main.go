@@ -59,6 +59,7 @@ func main() {
 	endpoints = pkg.WithPaymentTypeEndpoints(pc, endpoints)
 	endpoints = pkg.WithPaymentConditionEndpoints(pc, endpoints)
 	endpoints = pkg.WithCustomerEndpoints(cc, endpoints)
+	endpoints = pkg.WithEquipmentEndpoints(ic, endpoints)
 
 	http.ListenAndServe(":80", pkg.NewHTTPServer(endpoints))
 }

@@ -205,9 +205,9 @@ func encodeEquipmentResponse(ctx context.Context, r any) (any, error) {
 		rentingValues[i] = &proto.RentingValue{
 			Value: value.Value,
 			Period: &proto.Period{
-				Id:      value.Period.ID,
-				Name:    value.Period.Name,
-				QtyDays: value.Period.QtyDays,
+				Id:      value.PeriodID,
+				Name:    value.PeriodID,
+				QtyDays: 55,
 			},
 		}
 	}

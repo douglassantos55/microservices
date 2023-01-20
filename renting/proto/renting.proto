@@ -78,5 +78,23 @@ message Customer {
 message Equipment {
     string id = 1;
     string description = 2;
-    double weight = 3;
+    int64 stock = 3;
+    int64 effective_stock = 4;
+    double weight = 5;
+    double unit_value = 6;
+    double purchase_value = 7;
+    double replace_value = 8;
+    int64 min_qty = 9;
+    repeated RentingValue renting_values = 11;
+}
+
+message RentingValue {
+    double value = 1;
+    Period period = 2;
+}
+
+message Period {
+    string id = 1;
+    string name = 2;
+    int32 qty_days = 3;
 }

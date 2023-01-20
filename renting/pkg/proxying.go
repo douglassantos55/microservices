@@ -244,7 +244,7 @@ func NewDeliveryService(url string) (DeliveryService, error) {
 	return &grpcDeliveryService{conn}, nil
 }
 
-func (s *grpcDeliveryService) GetQuote(origin, dest, carrier string, items []Item) (*Quote, error) {
+func (s *grpcDeliveryService) GetQuote(origin, dest, carrier string, items []*Item) (*Quote, error) {
 	quoteItems := make([]QuoteItem, len(items))
 	for i, item := range items {
 		quoteItems[i] = QuoteItem{Qty: int64(item.Qty)}
@@ -326,6 +326,40 @@ type QuoteItem struct {
 	Depth  float64
 }
 
+func WithEquipmentEndpoints(cc *grpc.ClientConn, endpoints Set) Set {
+	withEquipment := withEquipmentMiddleware(cc)
+
+	return Set{
+		CreateRent: withEquipment(endpoints.CreateRent),
+	}
+}
+
+func withEquipmentMiddleware(cc *grpc.ClientConn) endpoint.Middleware {
+	getEquipment := getEquipmentEndpoint(cc)
+
+	return func(next endpoint.Endpoint) endpoint.Endpoint {
+		return func(ctx context.Context, r any) (any, error) {
+			res, err := next(ctx, r)
+			if err != nil {
+				return nil, err
+			}
+
+			if rent, ok := res.(*Rent); ok {
+				for _, item := range rent.Items {
+					equipment, err := getEquipment(ctx, item.EquipmentID)
+					if err == nil {
+						item.Equipment = equipment.(*Equipment)
+					}
+				}
+
+				return rent, nil
+			}
+
+			return res, err
+		}
+	}
+}
+
 func getEquipmentEndpoint(cc *grpc.ClientConn) endpoint.Endpoint {
 	return grpctransport.NewClient(
 		cc,
@@ -339,10 +373,25 @@ func getEquipmentEndpoint(cc *grpc.ClientConn) endpoint.Endpoint {
 
 func decodeEquipment(ctx context.Context, r any) (any, error) {
 	equipment := r.(*proto.Equipment)
+	rentingValues := make([]*RentingValue, len(equipment.GetRentingValues()))
 
-	return Equipment{
-		ID:          equipment.GetId(),
-		Description: equipment.GetDescription(),
-		Weight:      equipment.GetWeight(),
+	for i, value := range equipment.GetRentingValues() {
+		rentingValues[i] = &RentingValue{
+			Value:    value.GetValue(),
+			PeriodID: value.GetPeriod().GetId(),
+			Period: &Period{
+				ID:      value.GetPeriod().GetId(),
+				Name:    value.GetPeriod().GetName(),
+				QtyDays: value.GetPeriod().GetQtyDays(),
+			},
+		}
+	}
+
+	return &Equipment{
+		ID:            equipment.GetId(),
+		Description:   equipment.GetDescription(),
+		Weight:        equipment.GetWeight(),
+		UnitValue:     equipment.GetUnitValue(),
+		RentingValues: rentingValues,
 	}, nil
 }

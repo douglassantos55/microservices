@@ -19,8 +19,8 @@ type Rent struct {
 	Customer           *Customer         `json:"customer,omitempty"`
 	StartDate          time.Time         `json:"start_date" validate:"required"`
 	EndDate            time.Time         `json:"end_date" validate:"required"`
-	Items              []Item            `json:"items" validate:"required,dive"`
 	QtyDays            int               `json:"qty_days" validate:"required"`
+	Items              []*Item           `json:"items" validate:"required,dive"`
 	Discount           float64           `json:"discount" validate:"omitempty,gt=0"`
 	PaidValue          float64           `json:"paid_value" validate:"omitempty,gt=0"`
 	Bill               float64           `json:"bill" validate:"required_with=PaidValue,ltefield=PaidValue"`
@@ -32,9 +32,10 @@ type Rent struct {
 }
 
 type Item struct {
-	ID          string `json:"id" bson:"_id,omitempty"`
-	EquipmentID string `json:"equipment_id" validate:"required,equipment"`
-	Qty         int    `json:"qty" validate:"required,gt=0"`
+	ID          string     `json:"id" bson:"_id,omitempty"`
+	EquipmentID string     `json:"equipment_id" validate:"required,equipment"`
+	Equipment   *Equipment `json:"equipment"`
+	Qty         int        `json:"qty" validate:"required,gt=0"`
 }
 
 type PaymentType struct {
@@ -67,9 +68,11 @@ type Customer struct {
 }
 
 type Equipment struct {
-	ID          string  `json:"id"`
-	Description string  `json:"description"`
-	Weight      float64 `json:"weight"`
+	ID            string          `json:"id"`
+	Description   string          `json:"description"`
+	Weight        float64         `json:"weight"`
+	UnitValue     float64         `json:"unit_value"`
+	RentingValues []*RentingValue `json:"renting_values" validate:"required,dive"`
 }
 
 type Account struct {
@@ -93,7 +96,7 @@ type service struct {
 }
 
 type DeliveryService interface {
-	GetQuote(origin, dest, carrier string, items []Item) (*Quote, error)
+	GetQuote(origin, dest, carrier string, items []*Item) (*Quote, error)
 }
 
 func NewService(validator Validator, repository Repository, delivery DeliveryService) *service {
