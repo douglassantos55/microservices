@@ -98,3 +98,12 @@ message Period {
     string name = 2;
     int32 qty_days = 3;
 }
+
+message ReduceStockRequest {
+    string id = 1;
+    int64 qty = 2;
+}
+
+message ReduceStockReply {
+    string err = 1;
+}

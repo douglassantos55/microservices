@@ -236,12 +236,8 @@ type grpcDeliveryService struct {
 	conn *grpc.ClientConn
 }
 
-func NewDeliveryService(url string) (DeliveryService, error) {
-	conn, err := grpc.Dial(url, grpc.WithInsecure())
-	if err != nil {
-		return nil, err
-	}
-	return &grpcDeliveryService{conn}, nil
+func NewGRPCDeliveryService(cc *grpc.ClientConn) DeliveryService {
+	return &grpcDeliveryService{cc}
 }
 
 func (s *grpcDeliveryService) GetQuote(origin, dest, carrier string, items []*Item) (*Quote, error) {
@@ -394,4 +390,51 @@ func decodeEquipment(ctx context.Context, r any) (any, error) {
 		UnitValue:     equipment.GetUnitValue(),
 		RentingValues: rentingValues,
 	}, nil
+}
+
+type grpcInventoryService struct {
+	cc *grpc.ClientConn
+}
+
+func NewGRCPInventoryService(cc *grpc.ClientConn) *grpcInventoryService {
+	return &grpcInventoryService{cc}
+}
+
+func (s *grpcInventoryService) ReduceStock(items []*Item) error {
+	reduceStock := reduceStockEndpoint(s.cc)
+
+	for _, item := range items {
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+
+		if _, err := reduceStock(ctx, item); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func reduceStockEndpoint(cc *grpc.ClientConn) endpoint.Endpoint {
+	return grpctransport.NewClient(
+		cc,
+		"proto.Inventory",
+		"ReduceStock",
+		encodeReduceStockRequest,
+		NopGRPCDecoder,
+		&proto.ReduceStockReply{},
+	).Endpoint()
+}
+
+func encodeReduceStockRequest(ctx context.Context, r any) (any, error) {
+	item := r.(*Item)
+
+	return &proto.ReduceStockRequest{
+		Id:  item.EquipmentID,
+		Qty: int64(item.Qty),
+	}, nil
+}
+
+func NopGRPCDecoder(ctx context.Context, r any) (any, error) {
+	return nil, nil
 }

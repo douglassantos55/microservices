@@ -25,18 +25,21 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	defer pc.Close()
 
 	customerUrl := os.Getenv("CUSTOMER_SERVICE_URL")
 	cc, err := grpc.Dial(customerUrl+":8080", grpc.WithInsecure())
 	if err != nil {
 		panic(err)
 	}
+	defer cc.Close()
 
 	inventoryUrl := os.Getenv("INVENTORY_SERVICE_URL")
 	ic, err := grpc.Dial(inventoryUrl+":8080", grpc.WithInsecure())
 	if err != nil {
 		panic(err)
 	}
+	defer ic.Close()
 
 	validator := pkg.NewValidator([]pkg.ValidationRule{
 		pkg.NewPaymentTypeRule(pc),
@@ -47,12 +50,15 @@ func main() {
 	})
 
 	deliveryUrl := os.Getenv("DELIVERY_SERVICE_URL")
-	delivery, err := pkg.NewDeliveryService(deliveryUrl + ":8080")
+	dc, err := grpc.Dial(deliveryUrl+":8080", grpc.WithInsecure())
 	if err != nil {
 		panic(err)
 	}
+	defer dc.Close()
 
-	svc := pkg.NewService(validator, repository, delivery)
+	delivery := pkg.NewGRPCDeliveryService(dc)
+	inventory := pkg.NewGRCPInventoryService(ic)
+	svc := pkg.NewService(validator, repository, delivery, inventory)
 
 	endpoints := pkg.CreateEndpoints(svc)
 	endpoints = pkg.WithPaymentMethodEndpoints(pc, endpoints)

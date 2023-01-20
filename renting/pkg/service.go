@@ -197,18 +197,23 @@ type Service interface {
 	CreateRent(Rent) (*Rent, error)
 }
 
-type service struct {
-	validator  Validator
-	repository Repository
-	delivery   DeliveryService
-}
-
 type DeliveryService interface {
 	GetQuote(origin, dest, carrier string, items []*Item) (*Quote, error)
 }
 
-func NewService(validator Validator, repository Repository, delivery DeliveryService) *service {
-	return &service{validator, repository, delivery}
+type InventoryService interface {
+	ReduceStock(items []*Item) error
+}
+
+type service struct {
+	validator  Validator
+	repository Repository
+	delivery   DeliveryService
+	inventory  InventoryService
+}
+
+func NewService(validator Validator, repository Repository, delivery DeliveryService, inventory InventoryService) *service {
+	return &service{validator, repository, delivery, inventory}
 }
 
 func (s *service) CreateRent(data Rent) (*Rent, error) {
@@ -234,6 +239,11 @@ func (s *service) CreateRent(data Rent) (*Rent, error) {
 			"error creating rent",
 			"something went wrong creating rent",
 		)
+	}
+
+	if err := s.inventory.ReduceStock(rent.Items); err != nil {
+		// TODO: send to a process later queue?
+		return nil, err
 	}
 
 	return rent, nil
