@@ -335,23 +335,16 @@ func withEquipmentMiddleware(cc *grpc.ClientConn) endpoint.Middleware {
 
 	return func(next endpoint.Endpoint) endpoint.Endpoint {
 		return func(ctx context.Context, r any) (any, error) {
-			res, err := next(ctx, r)
-			if err != nil {
-				return nil, err
-			}
+			rent := r.(Rent)
 
-			if rent, ok := res.(*Rent); ok {
-				for _, item := range rent.Items {
-					equipment, err := getEquipment(ctx, item.EquipmentID)
-					if err == nil {
-						item.Equipment = equipment.(*Equipment)
-					}
+			for _, item := range rent.Items {
+				equipment, err := getEquipment(ctx, item.EquipmentID)
+				if err == nil {
+					item.Equipment = equipment.(*Equipment)
 				}
-
-				return rent, nil
 			}
 
-			return res, err
+			return next(ctx, rent)
 		}
 	}
 }
@@ -384,11 +377,12 @@ func decodeEquipment(ctx context.Context, r any) (any, error) {
 	}
 
 	return &Equipment{
-		ID:            equipment.GetId(),
-		Description:   equipment.GetDescription(),
-		Weight:        equipment.GetWeight(),
-		UnitValue:     equipment.GetUnitValue(),
-		RentingValues: rentingValues,
+		ID:             equipment.GetId(),
+		Description:    equipment.GetDescription(),
+		Weight:         equipment.GetWeight(),
+		UnitValue:      equipment.GetUnitValue(),
+		EffectiveStock: int(equipment.GetEffectiveStock()),
+		RentingValues:  rentingValues,
 	}, nil
 }
 

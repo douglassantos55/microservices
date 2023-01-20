@@ -3,6 +3,7 @@ package pkg
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -69,17 +70,19 @@ func (v *validate) Validate(data any) error {
 func makeValidationError(validationErrors validator.ValidationErrors) ValidationError {
 	errors := make(map[string]string)
 	for _, error := range validationErrors {
-		errors[error.Namespace()] = getErrorMessage(error.Tag())
+		errors[error.Namespace()] = getErrorMessage(error)
 	}
 	return ValidationError{errors}
 }
 
-func getErrorMessage(error string) string {
-	switch error {
+func getErrorMessage(error validator.FieldError) string {
+	switch error.Tag() {
 	case "required":
 		return "this field is required"
 	case "numeric", "number":
 		return "this field contain a number"
+	case "ltecsfield":
+		return fmt.Sprintf("this field must be less than or equals to %s", error.Param())
 	case "payment_type":
 		return "invalid payment type"
 	case "payment_condition":

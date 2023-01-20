@@ -114,7 +114,7 @@ type Item struct {
 	ID          string     `json:"id" bson:"_id,omitempty"`
 	EquipmentID string     `json:"equipment_id" validate:"required,equipment"`
 	Equipment   *Equipment `json:"equipment"`
-	Qty         int        `json:"qty" validate:"required,gt=0"`
+	Qty         int        `json:"qty" validate:"required,gt=0,ltecsfield=Equipment.EffectiveStock"`
 }
 
 func (i *Item) GetSubtotal(period string) float64 {
@@ -155,11 +155,12 @@ type Customer struct {
 }
 
 type Equipment struct {
-	ID            string          `json:"id"`
-	Description   string          `json:"description"`
-	Weight        float64         `json:"weight"`
-	UnitValue     float64         `json:"unit_value"`
-	RentingValues []*RentingValue `json:"renting_values" validate:"required,dive"`
+	ID             string          `json:"id"`
+	Description    string          `json:"description"`
+	Weight         float64         `json:"weight"`
+	UnitValue      float64         `json:"unit_value"`
+	EffectiveStock int             `json:"effective_qty"`
+	RentingValues  []*RentingValue `json:"renting_values" validate:"required,dive"`
 }
 
 func (e *Equipment) GetRentingValue(period string) float64 {
