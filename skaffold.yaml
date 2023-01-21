@@ -34,6 +34,7 @@ build:
       dockerfile: Dockerfile
 manifests:
   rawYaml:
+  - rabbitmq.yml
   - auth.yml
   - customer.yml
   - mongodb.yml

@@ -210,11 +210,10 @@ type service struct {
 	validator  Validator
 	repository Repository
 	delivery   DeliveryService
-	inventory  InventoryService
 }
 
-func NewService(validator Validator, repository Repository, delivery DeliveryService, inventory InventoryService) *service {
-	return &service{validator, repository, delivery, inventory}
+func NewService(validator Validator, repository Repository, delivery DeliveryService) Service {
+	return &service{validator, repository, delivery}
 }
 
 func (s *service) CreateRent(data Rent) (*Rent, error) {
@@ -240,11 +239,6 @@ func (s *service) CreateRent(data Rent) (*Rent, error) {
 			"error creating rent",
 			"something went wrong creating rent",
 		)
-	}
-
-	if err := s.inventory.ReduceStock(rent.Items); err != nil {
-		// TODO: send to a process later queue?
-		return nil, err
 	}
 
 	return rent, nil

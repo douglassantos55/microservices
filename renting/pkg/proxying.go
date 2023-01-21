@@ -393,30 +393,7 @@ func decodeEquipment(ctx context.Context, r any) (any, error) {
 	}, nil
 }
 
-type grpcInventoryService struct {
-	cc *grpc.ClientConn
-}
-
-func NewGRCPInventoryService(cc *grpc.ClientConn) *grpcInventoryService {
-	return &grpcInventoryService{cc}
-}
-
-func (s *grpcInventoryService) ReduceStock(items []*Item) error {
-	reduceStock := reduceStockEndpoint(s.cc)
-
-	for _, item := range items {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-		defer cancel()
-
-		if _, err := reduceStock(ctx, item); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func reduceStockEndpoint(cc *grpc.ClientConn) endpoint.Endpoint {
+func ReduceStockEndpoint(cc *grpc.ClientConn) endpoint.Endpoint {
 	return grpctransport.NewClient(
 		cc,
 		"proto.Inventory",

@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
+	"github.com/streadway/amqp"
 	"google.golang.org/grpc"
 	"reconcip.com.br/microservices/renting/pkg"
 )
@@ -56,8 +58,18 @@ func main() {
 	defer dc.Close()
 
 	delivery := pkg.NewGRPCDeliveryService(dc)
-	inventory := pkg.NewGRCPInventoryService(ic)
-	svc := pkg.NewService(validator, repository, delivery, inventory)
+	svc := pkg.NewService(validator, repository, delivery)
+
+	brokerUrl := os.Getenv("BROKER_SERVICE_URL")
+	brokerUser := os.Getenv("BROKER_USER")
+	brokerPass := os.Getenv("BROKER_PASSWORD")
+
+	conn, err := amqp.Dial(fmt.Sprintf("amqp://%s:%s@%s/", brokerUser, brokerPass, brokerUrl))
+	if err != nil {
+		panic(err)
+	}
+
+	svc = pkg.NewInventoryService(svc, pkg.ReduceStockEndpoint(ic), pkg.ProcessLaterEndpoint(conn))
 
 	endpoints := pkg.CreateEndpoints(svc)
 	endpoints = pkg.WithEquipmentEndpoints(ic, endpoints)

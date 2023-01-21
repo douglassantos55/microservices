@@ -31,6 +31,12 @@ spec:
           value: customer-service
         - name: INVENTORY_SERVICE_URL
           value: inventory-service
+        - name: BROKER_SERVICE_URL
+          value: rabbitmq-service
+        - name: BROKER_USER
+          value: guest
+        - name: BROKER_PASSWORD
+          value: guest
         - name: MONGODB_URL
           value: mongodb-service
         - name: MONGODB_USER
