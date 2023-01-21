@@ -112,7 +112,7 @@ func (r *Rent) GetTotalPieces() int {
 
 type Item struct {
 	ID          string     `json:"id" bson:"_id,omitempty"`
-	EquipmentID string     `json:"equipment_id" validate:"required,equipment"`
+	EquipmentID string     `json:"equipment_id" validate:"required"`
 	Equipment   *Equipment `json:"equipment"`
 	Qty         int        `json:"qty" validate:"required,gt=0,ltecsfield=Equipment.EffectiveStock"`
 }

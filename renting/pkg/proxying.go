@@ -2,6 +2,8 @@ package pkg
 
 import (
 	"context"
+	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/go-kit/kit/endpoint"
@@ -337,11 +339,16 @@ func withEquipmentMiddleware(cc *grpc.ClientConn) endpoint.Middleware {
 		return func(ctx context.Context, r any) (any, error) {
 			rent := r.(Rent)
 
-			for _, item := range rent.Items {
+			for i, item := range rent.Items {
 				equipment, err := getEquipment(ctx, item.EquipmentID)
-				if err == nil {
-					item.Equipment = equipment.(*Equipment)
+				if err != nil {
+					return nil, NewError(
+						http.StatusBadRequest,
+						"equipment not found",
+						fmt.Sprintf("Items[%d] equipment not found", i),
+					)
 				}
+				item.Equipment = equipment.(*Equipment)
 			}
 
 			return next(ctx, rent)

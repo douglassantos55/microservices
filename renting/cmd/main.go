@@ -46,7 +46,6 @@ func main() {
 		pkg.NewPaymentMethodRule(pc),
 		pkg.NewPaymentConditionRule(pc),
 		pkg.NewCustomerRule(cc),
-		pkg.NewEquipmentRule(ic),
 	})
 
 	deliveryUrl := os.Getenv("DELIVERY_SERVICE_URL")

@@ -185,25 +185,3 @@ func (r customerRule) Valid(value string) bool {
 
 	return err == nil
 }
-
-type equipmentRule struct {
-	cc *grpc.ClientConn
-}
-
-func NewEquipmentRule(cc *grpc.ClientConn) equipmentRule {
-	return equipmentRule{cc}
-}
-
-func (r equipmentRule) Tag() string {
-	return "equipment"
-}
-
-func (r equipmentRule) Valid(value string) bool {
-	endpoint := getEquipmentEndpoint(r.cc)
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-
-	defer cancel()
-	_, err := endpoint(ctx, value)
-
-	return err == nil
-}
