@@ -10,12 +10,14 @@ import (
 type Set struct {
 	Create endpoint.Endpoint
 	List   endpoint.Endpoint
+	Update endpoint.Endpoint
 }
 
 func CreateEndpoints(svc Service) Set {
 	return Set{
 		Create: createRentEndpoint(svc),
 		List:   createListEndpoint(svc),
+		Update: createUpdateEndpoint(svc),
 	}
 }
 
@@ -53,4 +55,16 @@ type ListResult struct {
 	Items      []any `json:"items"`
 	TotalPages int64 `json:"total_pages"`
 	TotalItems int64 `json:"total_items"`
+}
+
+func createUpdateEndpoint(svc Service) endpoint.Endpoint {
+	return func(ctx context.Context, r any) (any, error) {
+		req := r.(UpdateRequest)
+		return svc.UpdateRent(req.ID, req.Data)
+	}
+}
+
+type UpdateRequest struct {
+	ID   string `json:"id"`
+	Data Rent   `json:"data"`
 }

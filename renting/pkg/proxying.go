@@ -17,6 +17,7 @@ func WithPaymentTypeEndpoints(cc *grpc.ClientConn, endpoints Set) Set {
 	return Set{
 		Create: withPaymentType(endpoints.Create),
 		List:   withPaymentType(endpoints.List),
+		Update: withPaymentType(endpoints.Update),
 	}
 }
 
@@ -83,6 +84,7 @@ func WithPaymentMethodEndpoints(cc *grpc.ClientConn, endpoints Set) Set {
 	return Set{
 		Create: withPaymentMethod(endpoints.Create),
 		List:   withPaymentMethod(endpoints.List),
+		Update: withPaymentMethod(endpoints.Update),
 	}
 }
 
@@ -144,6 +146,7 @@ func WithPaymentConditionEndpoints(cc *grpc.ClientConn, endpoints Set) Set {
 	return Set{
 		Create: withPaymentCondition(endpoints.Create),
 		List:   withPaymentCondition(endpoints.List),
+		Update: withPaymentCondition(endpoints.Update),
 	}
 }
 
@@ -214,6 +217,7 @@ func WithCustomerEndpoints(cc *grpc.ClientConn, endpoints Set) Set {
 	return Set{
 		Create: withCustomer(endpoints.Create),
 		List:   withCustomer(endpoints.List),
+		Update: withCustomer(endpoints.Update),
 	}
 }
 
@@ -370,6 +374,7 @@ func WithEquipmentEndpoints(cc *grpc.ClientConn, endpoints Set) Set {
 	return Set{
 		Create: withEquipment(endpoints.Create),
 		List:   withEquipment(endpoints.List),
+		Update: withEquipment(endpoints.Update),
 	}
 }
 
@@ -409,6 +414,15 @@ func withEquipmentMiddleware(cc *grpc.ClientConn) endpoint.Middleware {
 					}
 				}
 				return next(ctx, result)
+			}
+
+			if req, ok := r.(UpdateRequest); ok {
+				for i, item := range req.Data.Items {
+					if err := appendEquipment(ctx, i, item); err != nil {
+						return nil, err
+					}
+				}
+				return next(ctx, req)
 			}
 
 			return next(ctx, r)

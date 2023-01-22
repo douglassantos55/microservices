@@ -197,6 +197,7 @@ type Quote struct {
 type Service interface {
 	CreateRent(Rent) (*Rent, error)
 	ListRents(page, perPage int64) ([]*Rent, int64, error)
+	UpdateRent(id string, data Rent) (*Rent, error)
 }
 
 type DeliveryService interface {
@@ -243,6 +244,31 @@ func (s *service) CreateRent(data Rent) (*Rent, error) {
 			http.StatusInternalServerError,
 			"error creating rent",
 			"something went wrong creating rent",
+		)
+	}
+
+	return rent, nil
+}
+
+func (s *service) UpdateRent(id string, data Rent) (*Rent, error) {
+	if _, err := s.repository.GetRent(id); err != nil {
+		return nil, NewError(
+			http.StatusNotFound,
+			"rent not found",
+			"could not find rent",
+		)
+	}
+
+	if err := s.validator.Validate(data); err != nil {
+		return nil, err
+	}
+
+	rent, err := s.repository.UpdateRent(id, data)
+	if err != nil {
+		return nil, NewError(
+			http.StatusInternalServerError,
+			"error updating rent",
+			"could not update rent",
 		)
 	}
 

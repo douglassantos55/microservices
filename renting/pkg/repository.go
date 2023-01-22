@@ -12,8 +12,10 @@ import (
 )
 
 type Repository interface {
+	GetRent(id string) (*Rent, error)
 	CreateRent(Rent) (*Rent, error)
 	ListRents(page, perPage int64) ([]*Rent, int64, error)
+	UpdateRent(id string, data Rent) (*Rent, error)
 }
 
 type mongoRepository struct {
@@ -93,4 +95,17 @@ func (r *mongoRepository) GetRent(id string) (*Rent, error) {
 	}
 
 	return rent, nil
+}
+
+func (r *mongoRepository) UpdateRent(id string, data Rent) (*Rent, error) {
+	collection := r.database.Collection("rents")
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+
+	defer cancel()
+
+	if _, err := collection.ReplaceOne(ctx, bson.M{"_id": id}, data); err != nil {
+		return nil, err
+	}
+
+	return r.GetRent(id)
 }

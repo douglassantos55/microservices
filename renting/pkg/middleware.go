@@ -24,6 +24,10 @@ func (s *inventoryService) ListRents(page, perPage int64) ([]*Rent, int64, error
 	return s.next.ListRents(page, perPage)
 }
 
+func (s *inventoryService) UpdateRent(id string, data Rent) (*Rent, error) {
+	return s.next.UpdateRent(id, data)
+}
+
 func (s *inventoryService) CreateRent(data Rent) (*Rent, error) {
 	rent, err := s.next.CreateRent(data)
 	if err != nil {
