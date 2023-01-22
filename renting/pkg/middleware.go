@@ -20,6 +20,10 @@ func NewInventoryService(svc Service, reduceStock, processLater endpoint.Endpoin
 	return &inventoryService{svc, reduceStock, processLater}
 }
 
+func (s *inventoryService) ListRents(page, perPage int64) ([]*Rent, int64, error) {
+	return s.next.ListRents(page, perPage)
+}
+
 func (s *inventoryService) CreateRent(data Rent) (*Rent, error) {
 	rent, err := s.next.CreateRent(data)
 	if err != nil {

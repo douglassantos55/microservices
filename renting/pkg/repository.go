@@ -13,6 +13,7 @@ import (
 
 type Repository interface {
 	CreateRent(Rent) (*Rent, error)
+	ListRents(page, perPage int64) ([]*Rent, int64, error)
 }
 
 type mongoRepository struct {
@@ -45,6 +46,34 @@ func (r *mongoRepository) CreateRent(data Rent) (*Rent, error) {
 	}
 
 	return r.GetRent(result.InsertedID.(string))
+}
+
+func (r *mongoRepository) ListRents(page, perPage int64) ([]*Rent, int64, error) {
+	collection := r.database.Collection("rents")
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+
+	defer cancel()
+
+	total, err := collection.EstimatedDocumentCount(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	options := options.Find()
+	options.SetLimit(perPage)
+	options.SetSkip(page * perPage)
+
+	result, err := collection.Find(ctx, bson.D{}, options)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	if result.Err() != nil {
+		return nil, 0, result.Err()
+	}
+
+	rents := make([]*Rent, 0)
+	return rents, total, result.All(ctx, &rents)
 }
 
 func (r *mongoRepository) GetRent(id string) (*Rent, error) {

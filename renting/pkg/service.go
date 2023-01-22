@@ -196,6 +196,7 @@ type Quote struct {
 
 type Service interface {
 	CreateRent(Rent) (*Rent, error)
+	ListRents(page, perPage int64) ([]*Rent, int64, error)
 }
 
 type DeliveryService interface {
@@ -214,6 +215,10 @@ type service struct {
 
 func NewService(validator Validator, repository Repository, delivery DeliveryService) Service {
 	return &service{validator, repository, delivery}
+}
+
+func (s *service) ListRents(page, perPage int64) ([]*Rent, int64, error) {
+	return s.repository.ListRents(page, perPage)
 }
 
 func (s *service) CreateRent(data Rent) (*Rent, error) {

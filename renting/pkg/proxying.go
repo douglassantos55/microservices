@@ -15,12 +15,20 @@ import (
 func WithPaymentTypeEndpoints(cc *grpc.ClientConn, endpoints Set) Set {
 	withPaymentType := withPaymentTypeMiddleware(cc)
 	return Set{
-		CreateRent: withPaymentType(endpoints.CreateRent),
+		Create: withPaymentType(endpoints.Create),
+		List:   withPaymentType(endpoints.List),
 	}
 }
 
 func withPaymentTypeMiddleware(cc *grpc.ClientConn) endpoint.Middleware {
 	getPaymentType := getPaymentTypeEndpoint(cc)
+
+	appendType := func(ctx context.Context, rent *Rent) {
+		paymentType, err := getPaymentType(ctx, rent.PaymentTypeID)
+		if err == nil {
+			rent.PaymentType = paymentType.(*PaymentType)
+		}
+	}
 
 	return func(next endpoint.Endpoint) endpoint.Endpoint {
 		return func(ctx context.Context, r any) (any, error) {
@@ -30,11 +38,13 @@ func withPaymentTypeMiddleware(cc *grpc.ClientConn) endpoint.Middleware {
 			}
 
 			if rent, ok := res.(*Rent); ok {
-				paymentType, err := getPaymentType(ctx, rent.PaymentTypeID)
-				if err == nil {
-					rent.PaymentType = paymentType.(*PaymentType)
+				appendType(ctx, rent)
+			}
+
+			if result, ok := res.(ListResult); ok {
+				for _, rent := range result.Items {
+					appendType(ctx, rent.(*Rent))
 				}
-				return rent, nil
 			}
 
 			return res, err
@@ -71,12 +81,20 @@ func WithPaymentMethodEndpoints(cc *grpc.ClientConn, endpoints Set) Set {
 	withPaymentMethod := withPaymentMethodMiddleware(cc)
 
 	return Set{
-		CreateRent: withPaymentMethod(endpoints.CreateRent),
+		Create: withPaymentMethod(endpoints.Create),
+		List:   withPaymentMethod(endpoints.List),
 	}
 }
 
 func withPaymentMethodMiddleware(cc *grpc.ClientConn) endpoint.Middleware {
 	getPaymentMethod := getPaymentMethodEndpoint(cc)
+
+	appendMethod := func(ctx context.Context, rent *Rent) {
+		method, err := getPaymentMethod(ctx, rent.PaymentMethodID)
+		if err == nil {
+			rent.PaymentMethod = method.(*PaymentMethod)
+		}
+	}
 
 	return func(next endpoint.Endpoint) endpoint.Endpoint {
 		return func(ctx context.Context, r any) (any, error) {
@@ -86,11 +104,13 @@ func withPaymentMethodMiddleware(cc *grpc.ClientConn) endpoint.Middleware {
 			}
 
 			if rent, ok := res.(*Rent); ok {
-				method, err := getPaymentMethod(ctx, rent.PaymentMethodID)
-				if err == nil {
-					rent.PaymentMethod = method.(*PaymentMethod)
+				appendMethod(ctx, rent)
+			}
+
+			if result, ok := res.(ListResult); ok {
+				for _, rent := range result.Items {
+					appendMethod(ctx, rent.(*Rent))
 				}
-				return rent, nil
 			}
 
 			return res, nil
@@ -122,12 +142,20 @@ func WithPaymentConditionEndpoints(cc *grpc.ClientConn, endpoints Set) Set {
 	withPaymentCondition := withPaymentConditionMiddleware(cc)
 
 	return Set{
-		CreateRent: withPaymentCondition(endpoints.CreateRent),
+		Create: withPaymentCondition(endpoints.Create),
+		List:   withPaymentCondition(endpoints.List),
 	}
 }
 
 func withPaymentConditionMiddleware(cc *grpc.ClientConn) endpoint.Middleware {
 	getPaymentCondition := getPaymentConditionEndpoint(cc)
+
+	appendCondition := func(ctx context.Context, rent *Rent) {
+		condition, err := getPaymentCondition(ctx, rent.PaymentConditionID)
+		if err == nil {
+			rent.PaymentCondition = condition.(*PaymentCondition)
+		}
+	}
 
 	return func(next endpoint.Endpoint) endpoint.Endpoint {
 		return func(ctx context.Context, r any) (any, error) {
@@ -137,11 +165,13 @@ func withPaymentConditionMiddleware(cc *grpc.ClientConn) endpoint.Middleware {
 			}
 
 			if rent, ok := res.(*Rent); ok {
-				condition, err := getPaymentCondition(ctx, rent.PaymentConditionID)
-				if err == nil {
-					rent.PaymentCondition = condition.(*PaymentCondition)
+				appendCondition(ctx, rent)
+			}
+
+			if result, ok := res.(ListResult); ok {
+				for _, rent := range result.Items {
+					appendCondition(ctx, rent.(*Rent))
 				}
-				return rent, nil
 			}
 
 			return res, nil
@@ -182,12 +212,20 @@ func WithCustomerEndpoints(cc *grpc.ClientConn, endpoints Set) Set {
 	withCustomer := withCustomerMiddleware(cc)
 
 	return Set{
-		CreateRent: withCustomer(endpoints.CreateRent),
+		Create: withCustomer(endpoints.Create),
+		List:   withCustomer(endpoints.List),
 	}
 }
 
 func withCustomerMiddleware(cc *grpc.ClientConn) endpoint.Middleware {
 	getCustomer := getCustomerEndpoint(cc)
+
+	appendCustomer := func(ctx context.Context, rent *Rent) {
+		customer, err := getCustomer(ctx, rent.CustomerID)
+		if err == nil {
+			rent.Customer = customer.(*Customer)
+		}
+	}
 
 	return func(next endpoint.Endpoint) endpoint.Endpoint {
 		return func(ctx context.Context, r any) (any, error) {
@@ -197,11 +235,13 @@ func withCustomerMiddleware(cc *grpc.ClientConn) endpoint.Middleware {
 			}
 
 			if rent, ok := res.(*Rent); ok {
-				customer, err := getCustomer(ctx, rent.CustomerID)
-				if err == nil {
-					rent.Customer = customer.(*Customer)
+				appendCustomer(ctx, rent)
+			}
+
+			if result, ok := res.(ListResult); ok {
+				for _, rent := range result.Items {
+					appendCustomer(ctx, rent.(*Rent))
 				}
-				return rent, nil
 			}
 
 			return res, nil
@@ -328,30 +368,50 @@ func WithEquipmentEndpoints(cc *grpc.ClientConn, endpoints Set) Set {
 	withEquipment := withEquipmentMiddleware(cc)
 
 	return Set{
-		CreateRent: withEquipment(endpoints.CreateRent),
+		Create: withEquipment(endpoints.Create),
+		List:   withEquipment(endpoints.List),
 	}
 }
 
 func withEquipmentMiddleware(cc *grpc.ClientConn) endpoint.Middleware {
 	getEquipment := getEquipmentEndpoint(cc)
 
+	appendEquipment := func(ctx context.Context, index int, item *Item) error {
+		equipment, err := getEquipment(ctx, item.EquipmentID)
+		if err != nil {
+			return NewError(
+				http.StatusBadRequest,
+				"equipment not found",
+				fmt.Sprintf("Items[%d] equipment not found", index),
+			)
+		}
+		item.Equipment = equipment.(*Equipment)
+		return nil
+	}
+
 	return func(next endpoint.Endpoint) endpoint.Endpoint {
 		return func(ctx context.Context, r any) (any, error) {
-			rent := r.(Rent)
-
-			for i, item := range rent.Items {
-				equipment, err := getEquipment(ctx, item.EquipmentID)
-				if err != nil {
-					return nil, NewError(
-						http.StatusBadRequest,
-						"equipment not found",
-						fmt.Sprintf("Items[%d] equipment not found", i),
-					)
+			if rent, ok := r.(Rent); ok {
+				for i, item := range rent.Items {
+					if err := appendEquipment(ctx, i, item); err != nil {
+						return nil, err
+					}
 				}
-				item.Equipment = equipment.(*Equipment)
+				return next(ctx, rent)
 			}
 
-			return next(ctx, rent)
+			if result, ok := r.(ListResult); ok {
+				for _, item := range result.Items {
+					for i, item := range item.(*Rent).Items {
+						if err := appendEquipment(ctx, i, item); err != nil {
+							return nil, err
+						}
+					}
+				}
+				return next(ctx, result)
+			}
+
+			return next(ctx, r)
 		}
 	}
 }
