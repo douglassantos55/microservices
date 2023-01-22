@@ -198,6 +198,7 @@ type Service interface {
 	CreateRent(Rent) (*Rent, error)
 	ListRents(page, perPage int64) ([]*Rent, int64, error)
 	UpdateRent(id string, data Rent) (*Rent, error)
+	DeleteRent(id string) error
 }
 
 type DeliveryService interface {
@@ -273,4 +274,16 @@ func (s *service) UpdateRent(id string, data Rent) (*Rent, error) {
 	}
 
 	return rent, nil
+}
+
+func (s *service) DeleteRent(id string) error {
+	if _, err := s.repository.GetRent(id); err != nil {
+		return NewError(
+			http.StatusNotFound,
+			"rent not found",
+			"could not find rent",
+		)
+	}
+
+	return s.repository.DeleteRent(id)
 }

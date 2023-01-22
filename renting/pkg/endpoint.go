@@ -11,6 +11,7 @@ type Set struct {
 	Create endpoint.Endpoint
 	List   endpoint.Endpoint
 	Update endpoint.Endpoint
+	Delete endpoint.Endpoint
 }
 
 func CreateEndpoints(svc Service) Set {
@@ -18,6 +19,7 @@ func CreateEndpoints(svc Service) Set {
 		Create: createRentEndpoint(svc),
 		List:   createListEndpoint(svc),
 		Update: createUpdateEndpoint(svc),
+		Delete: createDeleteEndpoint(svc),
 	}
 }
 
@@ -67,4 +69,10 @@ func createUpdateEndpoint(svc Service) endpoint.Endpoint {
 type UpdateRequest struct {
 	ID   string `json:"id"`
 	Data Rent   `json:"data"`
+}
+
+func createDeleteEndpoint(svc Service) endpoint.Endpoint {
+	return func(ctx context.Context, r any) (any, error) {
+		return nil, svc.DeleteRent(r.(string))
+	}
 }

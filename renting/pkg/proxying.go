@@ -18,6 +18,7 @@ func WithPaymentTypeEndpoints(cc *grpc.ClientConn, endpoints Set) Set {
 		Create: withPaymentType(endpoints.Create),
 		List:   withPaymentType(endpoints.List),
 		Update: withPaymentType(endpoints.Update),
+		Delete: endpoints.Delete,
 	}
 }
 
@@ -85,6 +86,7 @@ func WithPaymentMethodEndpoints(cc *grpc.ClientConn, endpoints Set) Set {
 		Create: withPaymentMethod(endpoints.Create),
 		List:   withPaymentMethod(endpoints.List),
 		Update: withPaymentMethod(endpoints.Update),
+		Delete: endpoints.Delete,
 	}
 }
 
@@ -147,6 +149,7 @@ func WithPaymentConditionEndpoints(cc *grpc.ClientConn, endpoints Set) Set {
 		Create: withPaymentCondition(endpoints.Create),
 		List:   withPaymentCondition(endpoints.List),
 		Update: withPaymentCondition(endpoints.Update),
+		Delete: endpoints.Delete,
 	}
 }
 
@@ -218,6 +221,7 @@ func WithCustomerEndpoints(cc *grpc.ClientConn, endpoints Set) Set {
 		Create: withCustomer(endpoints.Create),
 		List:   withCustomer(endpoints.List),
 		Update: withCustomer(endpoints.Update),
+		Delete: endpoints.Delete,
 	}
 }
 
@@ -375,6 +379,7 @@ func WithEquipmentEndpoints(cc *grpc.ClientConn, endpoints Set) Set {
 		Create: withEquipment(endpoints.Create),
 		List:   withEquipment(endpoints.List),
 		Update: withEquipment(endpoints.Update),
+		Delete: endpoints.Delete,
 	}
 }
 

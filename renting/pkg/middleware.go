@@ -28,6 +28,10 @@ func (s *inventoryService) UpdateRent(id string, data Rent) (*Rent, error) {
 	return s.next.UpdateRent(id, data)
 }
 
+func (s *inventoryService) DeleteRent(id string) error {
+	return s.next.DeleteRent(id)
+}
+
 func (s *inventoryService) CreateRent(data Rent) (*Rent, error) {
 	rent, err := s.next.CreateRent(data)
 	if err != nil {

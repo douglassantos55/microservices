@@ -16,6 +16,7 @@ type Repository interface {
 	CreateRent(Rent) (*Rent, error)
 	ListRents(page, perPage int64) ([]*Rent, int64, error)
 	UpdateRent(id string, data Rent) (*Rent, error)
+	DeleteRent(id string) error
 }
 
 type mongoRepository struct {
@@ -108,4 +109,14 @@ func (r *mongoRepository) UpdateRent(id string, data Rent) (*Rent, error) {
 	}
 
 	return r.GetRent(id)
+}
+
+func (r *mongoRepository) DeleteRent(id string) error {
+	collection := r.database.Collection("rents")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+
+	defer cancel()
+	_, err := collection.DeleteOne(ctx, bson.M{"_id": id})
+
+	return err
 }
