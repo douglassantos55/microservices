@@ -7,9 +7,11 @@ import (
 	"strconv"
 
 	"github.com/go-kit/kit/auth/jwt"
+	amqptransport "github.com/go-kit/kit/transport/amqp"
 	"github.com/go-kit/kit/transport/grpc"
 	httptransport "github.com/go-kit/kit/transport/http"
 	"github.com/julienschmidt/httprouter"
+	"github.com/streadway/amqp"
 	"reconcip.com.br/microservices/inventory/proto"
 )
 
@@ -224,5 +226,61 @@ func encodeEquipmentResponse(ctx context.Context, r any) (any, error) {
 		MinQty:         int64(equipment.MinQty),
 		Supplier:       supplier,
 		RentingValues:  rentingValues,
+	}, nil
+}
+
+func NewSubscriber(endpoints Set, conn *amqp.Connection) {
+	subscriber := amqptransport.NewSubscriber(
+		endpoints.ReduceStock,
+		decodeReduceStockAMQPRequest,
+		amqptransport.EncodeNopResponse,
+	)
+
+	channel, err := conn.Channel()
+	if err != nil {
+		panic(err)
+	}
+
+	defer channel.Close()
+
+	if err := channel.ExchangeDeclare("inventory", "direct", true, false, false, false, nil); err != nil {
+		panic(err)
+	}
+
+	queue, err := channel.QueueDeclare("", true, false, false, false, nil)
+	if err != nil {
+		panic(err)
+	}
+
+	if err := channel.QueueBind(queue.Name, "stock.reduce", "inventory", false, nil); err != nil {
+		panic(err)
+	}
+
+	handler := subscriber.ServeDelivery(channel)
+	messages, err := channel.Consume(queue.Name, "", false, true, false, false, nil)
+
+	go func(<-chan amqp.Delivery) {
+		for message := range messages {
+			handler(&message)
+		}
+	}(messages)
+
+	var forever chan any
+	<-forever
+}
+
+func decodeReduceStockAMQPRequest(ctx context.Context, d *amqp.Delivery) (any, error) {
+	var item struct {
+		EquipmentID string `json:"equipment_id"`
+		Qty         int    `json:"qty"`
+	}
+
+	if err := json.Unmarshal(d.Body, &item); err != nil {
+		return nil, err
+	}
+
+	return ReduceStockRequest{
+		Equip: item.EquipmentID,
+		Qty:   int64(item.Qty),
 	}, nil
 }

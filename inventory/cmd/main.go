@@ -1,12 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"net"
 	"net/http"
 	"os"
 	"sync"
 
 	"github.com/go-kit/log"
+	"github.com/streadway/amqp"
 	"google.golang.org/grpc"
 	"reconcip.com.br/microservices/inventory/pkg"
 	"reconcip.com.br/microservices/inventory/proto"
@@ -46,7 +48,22 @@ func main() {
 	endpoints = pkg.FetchSupplierEndpoints(endpoints, conn)
 
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(3)
+
+	go func(endpoints pkg.Set) {
+		defer wg.Done()
+
+		user := os.Getenv("BROKER_USER")
+		pass := os.Getenv("BROKER_PASSWORD")
+		url := os.Getenv("BROKER_SERVICE_URL")
+
+		conn, err := amqp.Dial(fmt.Sprintf("amqp://%s:%s@%s/", user, pass, url))
+		if err != nil {
+			panic(err)
+		}
+
+		pkg.NewSubscriber(endpoints, conn)
+	}(endpoints)
 
 	go func(endpoints pkg.Set) {
 		defer wg.Done()
