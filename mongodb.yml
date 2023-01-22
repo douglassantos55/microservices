@@ -24,6 +24,13 @@ spec:
           value: root
         - name: MONGO_INITDB_ROOT_PASSWORD
           value: "123"
+        volumeMounts:
+          - mountPath: /data/db
+            name: database-volume
+      volumes:
+        - name: database-volume
+          hostPath:
+            path: /home/douglas/Desktop/microservices/database
 ---
 apiVersion: v1
 kind: Service
