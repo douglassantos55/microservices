@@ -206,17 +206,24 @@ type DeliveryService interface {
 }
 
 type InventoryService interface {
-	ReduceStock(items []*Item) error
+	ReduceStock(items []*Item)
+	RestoreStock(items []*Item)
 }
 
 type service struct {
 	validator  Validator
 	repository Repository
 	delivery   DeliveryService
+	inventory  InventoryService
 }
 
-func NewService(validator Validator, repository Repository, delivery DeliveryService) Service {
-	return &service{validator, repository, delivery}
+func NewService(
+	validator Validator,
+	repository Repository,
+	delivery DeliveryService,
+	inventory InventoryService,
+) Service {
+	return &service{validator, repository, delivery, inventory}
 }
 
 func (s *service) ListRents(page, perPage int64) ([]*Rent, int64, error) {
@@ -248,17 +255,21 @@ func (s *service) CreateRent(data Rent) (*Rent, error) {
 		)
 	}
 
+	s.inventory.ReduceStock(rent.Items)
 	return rent, nil
 }
 
 func (s *service) UpdateRent(id string, data Rent) (*Rent, error) {
-	if _, err := s.repository.GetRent(id); err != nil {
+	curr, err := s.repository.GetRent(id)
+	if err != nil {
 		return nil, NewError(
 			http.StatusNotFound,
 			"rent not found",
 			"could not find rent",
 		)
 	}
+
+	s.inventory.RestoreStock(curr.Items)
 
 	if err := s.validator.Validate(data); err != nil {
 		return nil, err
@@ -273,17 +284,19 @@ func (s *service) UpdateRent(id string, data Rent) (*Rent, error) {
 		)
 	}
 
+	s.inventory.ReduceStock(rent.Items)
 	return rent, nil
 }
 
 func (s *service) DeleteRent(id string) error {
-	if _, err := s.repository.GetRent(id); err != nil {
+	rent, err := s.repository.GetRent(id)
+	if err != nil {
 		return NewError(
 			http.StatusNotFound,
 			"rent not found",
 			"could not find rent",
 		)
 	}
-
+	s.inventory.RestoreStock(rent.Items)
 	return s.repository.DeleteRent(id)
 }

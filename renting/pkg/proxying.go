@@ -472,6 +472,17 @@ func decodeEquipment(ctx context.Context, r any) (any, error) {
 	}, nil
 }
 
+func RestoreStockEndpoint(cc *grpc.ClientConn) endpoint.Endpoint {
+	return grpctransport.NewClient(
+		cc,
+		"proto.Inventory",
+		"RestoreStock",
+		encodeRestoreStockRequest,
+		NopGRPCDecoder,
+		&proto.RestoreStockReply{},
+	).Endpoint()
+}
+
 func ReduceStockEndpoint(cc *grpc.ClientConn) endpoint.Endpoint {
 	return grpctransport.NewClient(
 		cc,
@@ -487,6 +498,15 @@ func encodeReduceStockRequest(ctx context.Context, r any) (any, error) {
 	item := r.(*Item)
 
 	return &proto.ReduceStockRequest{
+		Id:  item.EquipmentID,
+		Qty: int64(item.Qty),
+	}, nil
+}
+
+func encodeRestoreStockRequest(ctx context.Context, r any) (any, error) {
+	item := r.(*Item)
+
+	return &proto.RestoreStockRequest{
 		Id:  item.EquipmentID,
 		Qty: int64(item.Qty),
 	}, nil

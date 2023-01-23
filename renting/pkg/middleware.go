@@ -11,34 +11,13 @@ import (
 )
 
 type inventoryService struct {
-	next         Service
 	reduceStock  endpoint.Endpoint
+	restoreStock endpoint.Endpoint
 	processLater endpoint.Endpoint
 }
 
-func NewInventoryService(svc Service, reduceStock, processLater endpoint.Endpoint) Service {
-	return &inventoryService{svc, reduceStock, processLater}
-}
-
-func (s *inventoryService) ListRents(page, perPage int64) ([]*Rent, int64, error) {
-	return s.next.ListRents(page, perPage)
-}
-
-func (s *inventoryService) UpdateRent(id string, data Rent) (*Rent, error) {
-	return s.next.UpdateRent(id, data)
-}
-
-func (s *inventoryService) DeleteRent(id string) error {
-	return s.next.DeleteRent(id)
-}
-
-func (s *inventoryService) CreateRent(data Rent) (*Rent, error) {
-	rent, err := s.next.CreateRent(data)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, item := range rent.Items {
+func (s *inventoryService) ReduceStock(items []*Item) {
+	for _, item := range items {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
 
@@ -46,8 +25,19 @@ func (s *inventoryService) CreateRent(data Rent) (*Rent, error) {
 			s.processLater(ctx, item)
 		}
 	}
+}
 
-	return rent, nil
+func (s *inventoryService) RestoreStock(items []*Item) {
+	for _, item := range items {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+
+		s.restoreStock(ctx, item)
+	}
+}
+
+func NewInventoryService(reduceStock, restoreStock, processLater endpoint.Endpoint) InventoryService {
+	return &inventoryService{reduceStock, restoreStock, processLater}
 }
 
 func ProcessLaterEndpoint(conn *amqp.Connection) endpoint.Endpoint {

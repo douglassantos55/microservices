@@ -58,7 +58,6 @@ func main() {
 	defer dc.Close()
 
 	delivery := pkg.NewGRPCDeliveryService(dc)
-	svc := pkg.NewService(validator, repository, delivery)
 
 	brokerUrl := os.Getenv("BROKER_SERVICE_URL")
 	brokerUser := os.Getenv("BROKER_USER")
@@ -69,7 +68,13 @@ func main() {
 		panic(err)
 	}
 
-	svc = pkg.NewInventoryService(svc, pkg.ReduceStockEndpoint(ic), pkg.ProcessLaterEndpoint(conn))
+	inventory := pkg.NewInventoryService(
+		pkg.ReduceStockEndpoint(ic),
+		pkg.RestoreStockEndpoint(ic),
+		pkg.ProcessLaterEndpoint(conn),
+	)
+
+	svc := pkg.NewService(validator, repository, delivery, inventory)
 
 	endpoints := pkg.CreateEndpoints(svc)
 	endpoints = pkg.WithEquipmentEndpoints(ic, endpoints)
