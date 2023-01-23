@@ -131,6 +131,7 @@ type grpcServer struct {
 	proto.UnimplementedInventoryServer
 	reduceStock  grpc.Handler
 	getEquipment grpc.Handler
+	restoreStock grpc.Handler
 }
 
 func NewGRPCServer(endpoints Set) proto.InventoryServer {
@@ -138,12 +139,17 @@ func NewGRPCServer(endpoints Set) proto.InventoryServer {
 		reduceStock: grpc.NewServer(
 			endpoints.ReduceStock,
 			decodeReduceStockRequest,
-			encodeReduceStockResponse,
+			NopGRPCEncoder,
 		),
 		getEquipment: grpc.NewServer(
 			endpoints.Get,
 			decodeGetRequest,
 			encodeEquipmentResponse,
+		),
+		restoreStock: grpc.NewServer(
+			endpoints.RestoreStock,
+			decodeRestoreStockRequest,
+			NopGRPCEncoder,
 		),
 	}
 }
@@ -164,6 +170,14 @@ func (s *grpcServer) ReduceStock(ctx context.Context, req *proto.ReduceStockRequ
 	return &proto.ReduceStockReply{}, nil
 }
 
+func (s *grpcServer) RestoreStock(ctx context.Context, req *proto.RestoreStockRequest) (*proto.RestoreStockReply, error) {
+	_, _, err := s.restoreStock.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return &proto.RestoreStockReply{}, nil
+}
+
 func decodeReduceStockRequest(ctx context.Context, req any) (any, error) {
 	item := req.(*proto.ReduceStockRequest)
 
@@ -173,11 +187,25 @@ func decodeReduceStockRequest(ctx context.Context, req any) (any, error) {
 	}, nil
 }
 
-func encodeReduceStockResponse(ctx context.Context, res any) (any, error) {
+func decodeRestoreStockRequest(ctx context.Context, r any) (any, error) {
+	item := r.(*proto.RestoreStockRequest)
+
+	return RestoreStockRequest{
+		Equip: item.GetId(),
+		Qty:   item.GetQty(),
+	}, nil
+}
+
+func NopGRPCEncoder(ctx context.Context, res any) (any, error) {
 	return nil, nil
 }
 
 type ReduceStockRequest struct {
+	Equip string `json:"equip_id"`
+	Qty   int64  `json:"qty"`
+}
+
+type RestoreStockRequest struct {
 	Equip string `json:"equip_id"`
 	Qty   int64  `json:"qty"`
 }

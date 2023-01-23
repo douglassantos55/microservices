@@ -84,3 +84,15 @@ func (l *loggingService) ReduceStock(id string, qty int64) (err error) {
 	}()
 	return l.next.ReduceStock(id, qty)
 }
+
+func (l *loggingService) RestoreStock(id string, qty int64) (err error) {
+	defer func() {
+		l.logger.Log(
+			"method", "RestoreStock",
+			"id", id,
+			"qty", qty,
+			"err", err,
+		)
+	}()
+	return l.next.RestoreStock(id, qty)
+}

@@ -8,22 +8,24 @@ import (
 )
 
 type Set struct {
-	Get         endpoint.Endpoint
-	Create      endpoint.Endpoint
-	List        endpoint.Endpoint
-	Update      endpoint.Endpoint
-	Delete      endpoint.Endpoint
-	ReduceStock endpoint.Endpoint
+	Get          endpoint.Endpoint
+	Create       endpoint.Endpoint
+	List         endpoint.Endpoint
+	Update       endpoint.Endpoint
+	Delete       endpoint.Endpoint
+	ReduceStock  endpoint.Endpoint
+	RestoreStock endpoint.Endpoint
 }
 
 func NewSet(svc Service) Set {
 	return Set{
-		Get:         makeGetEndpoint(svc),
-		Create:      makeCreateEndpoint(svc),
-		List:        makeListEndpoint(svc),
-		Update:      makeUpdateEndpoint(svc),
-		Delete:      makeDeleteEndpoint(svc),
-		ReduceStock: makeReduceStockEndpoint(svc),
+		Get:          makeGetEndpoint(svc),
+		Create:       makeCreateEndpoint(svc),
+		List:         makeListEndpoint(svc),
+		Update:       makeUpdateEndpoint(svc),
+		Delete:       makeDeleteEndpoint(svc),
+		ReduceStock:  makeReduceStockEndpoint(svc),
+		RestoreStock: makeRestoreStockEndpoint(svc),
 	}
 }
 
@@ -86,5 +88,12 @@ func makeReduceStockEndpoint(svc Service) endpoint.Endpoint {
 	return func(ctx context.Context, r any) (any, error) {
 		req := r.(ReduceStockRequest)
 		return nil, svc.ReduceStock(req.Equip, req.Qty)
+	}
+}
+
+func makeRestoreStockEndpoint(svc Service) endpoint.Endpoint {
+	return func(ctx context.Context, r any) (any, error) {
+		req := r.(RestoreStockRequest)
+		return nil, svc.RestoreStock(req.Equip, req.Qty)
 	}
 }

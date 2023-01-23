@@ -5,8 +5,9 @@ package proto;
 option go_package = "reconcip.com.br/microservices/inventory/proto";
 
 service Inventory {
-    rpc ReduceStock(ReduceStockRequest) returns (ReduceStockReply) {}
     rpc GetEquipment(GetRequest) returns (Equipment) {}
+    rpc ReduceStock(ReduceStockRequest) returns (ReduceStockReply) {}
+    rpc RestoreStock(RestoreStockRequest) returns (RestoreStockReply) {}
 }
 
 message ReduceStockRequest {
@@ -15,6 +16,15 @@ message ReduceStockRequest {
 }
 
 message ReduceStockReply {
+    string err = 1;
+}
+
+message RestoreStockRequest {
+    string id = 1;
+    int64 qty = 2;
+}
+
+message RestoreStockReply {
     string err = 1;
 }
 
