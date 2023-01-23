@@ -199,6 +199,7 @@ type Service interface {
 	ListRents(page, perPage int64) ([]*Rent, int64, error)
 	UpdateRent(id string, data Rent) (*Rent, error)
 	DeleteRent(id string) error
+	GetRent(id string) (*Rent, error)
 }
 
 type DeliveryService interface {
@@ -299,4 +300,16 @@ func (s *service) DeleteRent(id string) error {
 	}
 	s.inventory.RestoreStock(rent.Items)
 	return s.repository.DeleteRent(id)
+}
+
+func (s *service) GetRent(id string) (*Rent, error) {
+	rent, err := s.repository.GetRent(id)
+	if err != nil {
+		return nil, NewError(
+			http.StatusNotFound,
+			"rent not found",
+			"could not find rent",
+		)
+	}
+	return rent, nil
 }
