@@ -1,6 +1,9 @@
 package pkg
 
-import "net/http"
+import (
+	"net/http"
+	"time"
+)
 
 type Method struct {
 	ID        string `json:"id" bson:"_id,omitempty"`
@@ -22,6 +25,19 @@ type Condition struct {
 	Installments  []int32 `json:"installments,dive,gt=0"`
 }
 
+type Invoice struct {
+	ID         string    `json:"id" bson:"_id,omitempty"`
+	CustomerID string    `json:"customer_id" validate:"required"`
+	DueDate    time.Time `json:"due_date" validate:"required,gt"`
+	Total      float64   `json:"total" validate:"required,gt=0"`
+	Items      []Item    `json:"items" validate:"required,dive"`
+}
+
+type Item struct {
+	Description string  `json:"description" validate:"required"`
+	Total       float64 `json:"total" validate:"required,gt=0"`
+}
+
 type Service interface {
 	CreatePaymentMethod(Method) (*Method, error)
 	ListPaymentMethods() ([]*Method, error)
@@ -40,6 +56,8 @@ type Service interface {
 	UpdatePaymentCondition(string, Condition) (*Condition, error)
 	DeletePaymentCondition(string) error
 	GetPaymentCondition(string) (*Condition, error)
+
+	CreateInvoice(Invoice) (*Invoice, error)
 }
 
 type service struct {
@@ -258,4 +276,21 @@ func (s *service) GetPaymentCondition(id string) (*Condition, error) {
 		)
 	}
 	return condition, nil
+}
+
+func (s *service) CreateInvoice(data Invoice) (*Invoice, error) {
+	if err := s.validator.Validate(data); err != nil {
+		return nil, err
+	}
+
+	invoice, err := s.repository.CreateInvoice(data)
+	if err != nil {
+		return nil, NewError(
+			http.StatusInternalServerError,
+			"could not create invoice",
+			"there was an error while creating invoice",
+		)
+	}
+
+	return invoice, nil
 }

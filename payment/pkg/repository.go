@@ -29,6 +29,8 @@ type Repository interface {
 	ListPaymentConditions() ([]*Condition, error)
 	UpdatePaymentCondition(string, Condition) (*Condition, error)
 	DeletePaymentCondition(string) error
+
+	CreateInvoice(Invoice) (*Invoice, error)
 }
 
 type mongoRepository struct {
@@ -277,4 +279,35 @@ func (r *mongoRepository) DeletePaymentCondition(id string) error {
 	_, err := collection.DeleteOne(ctx, bson.M{"_id": id})
 
 	return err
+}
+
+func (r *mongoRepository) CreateInvoice(data Invoice) (*Invoice, error) {
+	collection := r.database.Collection("invoices")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+
+	defer cancel()
+
+	data.ID = primitive.NewObjectID().Hex()
+	result, err := collection.InsertOne(ctx, data)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return r.GetInvoice(result.InsertedID.(string))
+}
+
+func (r *mongoRepository) GetInvoice(id string) (*Invoice, error) {
+	collection := r.database.Collection("invoices")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+
+	defer cancel()
+
+	result := collection.FindOne(ctx, bson.M{"_id": id})
+	if result.Err() != nil {
+		return nil, result.Err()
+	}
+
+	var invoice *Invoice
+	return invoice, result.Decode(&invoice)
 }

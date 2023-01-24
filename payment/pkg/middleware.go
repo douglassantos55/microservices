@@ -223,3 +223,15 @@ func (l *loggingService) GetPaymentCondition(id string) (condition *Condition, e
 	}()
 	return l.next.GetPaymentCondition(id)
 }
+
+func (l *loggingService) CreateInvoice(data Invoice) (invoice *Invoice, err error) {
+	defer func() {
+		l.logger.Log(
+			"method", "CreateInvoice",
+			"data", data,
+			"invoice", invoice,
+			"err", err,
+		)
+	}()
+	return l.next.CreateInvoice(data)
+}

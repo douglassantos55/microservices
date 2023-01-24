@@ -116,6 +116,7 @@ func NewHTTPHandler(endpoints Set) http.Handler {
 	makePaymentMethodRoutes("/methods", router, endpoints, options)
 	makePaymentTypeRoutes("/types", router, endpoints, options)
 	makePaymentConditionRoutes("/conditions", router, endpoints, options)
+	makeInvoiceRoutes("/invoices", router, endpoints, options)
 
 	return router
 }
@@ -348,4 +349,25 @@ func decodeUpdateConditionRequest(ctx context.Context, r *http.Request) (any, er
 type UpdateConditionRequest struct {
 	ID   string
 	Data Condition
+}
+
+func makeInvoiceRoutes(prefix string, router *httprouter.Router, endpoints Set, options httptransport.ServerOption) {
+	router.Handler(http.MethodPost, prefix+"/", httptransport.NewServer(
+		endpoints.CreateInvoice,
+		decodeCreateInvoiceRequest,
+		httptransport.EncodeJSONResponse,
+		options,
+	))
+}
+
+func decodeCreateInvoiceRequest(ctx context.Context, r *http.Request) (any, error) {
+	var invoice Invoice
+	if err := json.NewDecoder(r.Body).Decode(&invoice); err != nil {
+		return nil, NewError(
+			http.StatusBadRequest,
+			"invalid input data",
+			"verify your input and try again",
+		)
+	}
+	return invoice, nil
 }
