@@ -34,6 +34,7 @@ type Repository interface {
 	ListInvoices(int64, int64) ([]*Invoice, int64, error)
 	UpdateInvoice(string, Invoice) (*Invoice, error)
 	GetInvoice(string) (*Invoice, error)
+	DeleteInvoice(string) error
 }
 
 type mongoRepository struct {
@@ -354,4 +355,14 @@ func (r *mongoRepository) UpdateInvoice(id string, data Invoice) (*Invoice, erro
 	}
 
 	return r.GetInvoice(id)
+}
+
+func (r *mongoRepository) DeleteInvoice(id string) error {
+	collection := r.database.Collection("invoices")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+
+	defer cancel()
+	_, err := collection.DeleteOne(ctx, bson.M{"_id": id})
+
+	return err
 }
