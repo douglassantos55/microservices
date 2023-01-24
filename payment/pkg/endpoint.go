@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"context"
+	"math"
 
 	"github.com/go-kit/kit/endpoint"
 )
@@ -26,6 +27,7 @@ type Set struct {
 	GetPaymentCondition    endpoint.Endpoint
 
 	CreateInvoice endpoint.Endpoint
+	ListInvoices  endpoint.Endpoint
 }
 
 func CreateEndpoints(svc Service) Set {
@@ -50,6 +52,7 @@ func CreateEndpoints(svc Service) Set {
 		GetPaymentCondition:    getType(makeGetPaymentConditionEndpoint(svc)),
 
 		CreateInvoice: makeCreateInvoiceEndpoint(svc),
+		ListInvoices:  makeListInvoicesEndpoint(svc),
 	}
 }
 
@@ -153,4 +156,38 @@ func makeCreateInvoiceEndpoint(svc Service) endpoint.Endpoint {
 	return func(ctx context.Context, r any) (any, error) {
 		return svc.CreateInvoice(r.(Invoice))
 	}
+}
+
+func makeListInvoicesEndpoint(svc Service) endpoint.Endpoint {
+	return func(ctx context.Context, r any) (any, error) {
+		pagination := r.(Pagination)
+		invoices, total, err := svc.ListInvoices(pagination.Page, pagination.PerPage)
+		if err != nil {
+			return nil, err
+		}
+
+		items := make([]any, len(invoices))
+		for i, invoice := range invoices {
+			items[i] = invoice
+		}
+
+		totalPages := int64(math.Max(1, math.Round(float64(total/pagination.PerPage))))
+
+		return ListResult{
+			Items:      items,
+			TotalItems: total,
+			TotalPages: totalPages,
+		}, nil
+	}
+}
+
+type Pagination struct {
+	Page    int64 `json:"page"`
+	PerPage int64 `json:"per_page"`
+}
+
+type ListResult struct {
+	Items      []any `json:"items"`
+	TotalItems int64 `json:"total_items"`
+	TotalPages int64 `json:"total_pages"`
 }

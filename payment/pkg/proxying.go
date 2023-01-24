@@ -33,6 +33,7 @@ func VerifyEndpoints(cc *grpc.ClientConn, endpoints Set) Set {
 		GetPaymentCondition:    verify(endpoints.GetPaymentCondition),
 
 		CreateInvoice: verify(endpoints.CreateInvoice),
+		ListInvoices: verify(endpoints.ListInvoices),
 	}
 }
 

@@ -31,6 +31,7 @@ type Repository interface {
 	DeletePaymentCondition(string) error
 
 	CreateInvoice(Invoice) (*Invoice, error)
+	ListInvoices(int64, int64) ([]*Invoice, int64, error)
 }
 
 type mongoRepository struct {
@@ -310,4 +311,31 @@ func (r *mongoRepository) GetInvoice(id string) (*Invoice, error) {
 
 	var invoice *Invoice
 	return invoice, result.Decode(&invoice)
+}
+
+func (r *mongoRepository) ListInvoices(page, perPage int64) ([]*Invoice, int64, error) {
+	collection := r.database.Collection("invoices")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+
+	defer cancel()
+	total, err := collection.EstimatedDocumentCount(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	options := options.Find()
+	options.SetLimit(perPage)
+	options.SetSkip(page * perPage)
+
+	result, err := collection.Find(ctx, bson.D{}, options)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	if result.Err() != nil {
+		return nil, 0, result.Err()
+	}
+
+	invoices := make([]*Invoice, 0)
+	return invoices, total, result.All(ctx, &invoices)
 }

@@ -235,3 +235,17 @@ func (l *loggingService) CreateInvoice(data Invoice) (invoice *Invoice, err erro
 	}()
 	return l.next.CreateInvoice(data)
 }
+
+func (l *loggingService) ListInvoices(page, perPage int64) (invoices []*Invoice, total int64, err error) {
+	defer func() {
+		l.logger.Log(
+			"method", "ListInvoices",
+			"page", page,
+			"perPage", perPage,
+			"invoices", invoices,
+			"total", total,
+			"err", err,
+		)
+	}()
+	return l.next.ListInvoices(page, perPage)
+}

@@ -58,6 +58,7 @@ type Service interface {
 	GetPaymentCondition(string) (*Condition, error)
 
 	CreateInvoice(Invoice) (*Invoice, error)
+	ListInvoices(page, perPage int64) ([]*Invoice, int64, error)
 }
 
 type service struct {
@@ -293,4 +294,8 @@ func (s *service) CreateInvoice(data Invoice) (*Invoice, error) {
 	}
 
 	return invoice, nil
+}
+
+func (s *service) ListInvoices(page, perPage int64) ([]*Invoice, int64, error) {
+	return s.repository.ListInvoices(page, perPage)
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/go-kit/kit/auth/jwt"
 	"github.com/go-kit/kit/transport/grpc"
@@ -358,6 +359,13 @@ func makeInvoiceRoutes(prefix string, router *httprouter.Router, endpoints Set, 
 		httptransport.EncodeJSONResponse,
 		options,
 	))
+
+	router.Handler(http.MethodGet, prefix+"/", httptransport.NewServer(
+		endpoints.ListInvoices,
+		decodeListInvoicesRequest,
+		httptransport.EncodeJSONResponse,
+		options,
+	))
 }
 
 func decodeCreateInvoiceRequest(ctx context.Context, r *http.Request) (any, error) {
@@ -370,4 +378,22 @@ func decodeCreateInvoiceRequest(ctx context.Context, r *http.Request) (any, erro
 		)
 	}
 	return invoice, nil
+}
+
+func decodeListInvoicesRequest(ctx context.Context, r *http.Request) (any, error) {
+	params := r.URL.Query()
+	page, err := strconv.ParseInt(params.Get("page"), 0, 0)
+	if err != nil || page <= 0 {
+		page = 1
+	}
+
+	perPage, err := strconv.ParseInt(params.Get("per_page"), 0, 0)
+	if err != nil || perPage <= 0 {
+		perPage = 50
+	}
+
+	return Pagination{
+		Page:    page - 1,
+		PerPage: perPage,
+	}, nil
 }
