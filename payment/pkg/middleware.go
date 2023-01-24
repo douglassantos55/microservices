@@ -249,3 +249,16 @@ func (l *loggingService) ListInvoices(page, perPage int64) (invoices []*Invoice,
 	}()
 	return l.next.ListInvoices(page, perPage)
 }
+
+func (l *loggingService) UpdateInvoice(id string, data Invoice) (invoice *Invoice, err error) {
+	defer func() {
+		l.logger.Log(
+			"method", "UpdateInvoice",
+			"id", id,
+			"data", data,
+			"invoice", invoice,
+			"err", err,
+		)
+	}()
+	return l.next.UpdateInvoice(id, data)
+}

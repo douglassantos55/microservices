@@ -366,6 +366,13 @@ func makeInvoiceRoutes(prefix string, router *httprouter.Router, endpoints Set, 
 		httptransport.EncodeJSONResponse,
 		options,
 	))
+
+	router.Handler(http.MethodPut, prefix+"/:id", httptransport.NewServer(
+		endpoints.UpdateInvoice,
+		decodeUpdateInvoiceRequest,
+		httptransport.EncodeJSONResponse,
+		options,
+	))
 }
 
 func decodeCreateInvoiceRequest(ctx context.Context, r *http.Request) (any, error) {
@@ -395,5 +402,23 @@ func decodeListInvoicesRequest(ctx context.Context, r *http.Request) (any, error
 	return Pagination{
 		Page:    page - 1,
 		PerPage: perPage,
+	}, nil
+}
+
+func decodeUpdateInvoiceRequest(ctx context.Context, r *http.Request) (any, error) {
+	params := httprouter.ParamsFromContext(r.Context())
+
+	var invoice Invoice
+	if err := json.NewDecoder(r.Body).Decode(&invoice); err != nil {
+		return nil, NewError(
+			http.StatusBadRequest,
+			"invalid input data",
+			"verify your input and try again",
+		)
+	}
+
+	return UpdateInvoiceRequest{
+		ID:   params.ByName("id"),
+		Data: invoice,
 	}, nil
 }

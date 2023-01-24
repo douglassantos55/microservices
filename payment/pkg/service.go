@@ -59,6 +59,7 @@ type Service interface {
 
 	CreateInvoice(Invoice) (*Invoice, error)
 	ListInvoices(page, perPage int64) ([]*Invoice, int64, error)
+	UpdateInvoice(string, Invoice) (*Invoice, error)
 }
 
 type service struct {
@@ -298,4 +299,25 @@ func (s *service) CreateInvoice(data Invoice) (*Invoice, error) {
 
 func (s *service) ListInvoices(page, perPage int64) ([]*Invoice, int64, error) {
 	return s.repository.ListInvoices(page, perPage)
+}
+
+func (s *service) UpdateInvoice(id string, data Invoice) (*Invoice, error) {
+	if _, err := s.repository.GetInvoice(id); err != nil {
+		return nil, NewError(
+			http.StatusNotFound,
+			"invoice not found",
+			"could not find invoice",
+		)
+	}
+
+	invoice, err := s.repository.UpdateInvoice(id, data)
+	if err != nil {
+		return nil, NewError(
+			http.StatusInternalServerError,
+			"could not update invoice",
+			"there was an error updating invoice",
+		)
+	}
+
+	return invoice, nil
 }

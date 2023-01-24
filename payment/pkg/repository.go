@@ -32,6 +32,8 @@ type Repository interface {
 
 	CreateInvoice(Invoice) (*Invoice, error)
 	ListInvoices(int64, int64) ([]*Invoice, int64, error)
+	UpdateInvoice(string, Invoice) (*Invoice, error)
+	GetInvoice(string) (*Invoice, error)
 }
 
 type mongoRepository struct {
@@ -338,4 +340,18 @@ func (r *mongoRepository) ListInvoices(page, perPage int64) ([]*Invoice, int64, 
 
 	invoices := make([]*Invoice, 0)
 	return invoices, total, result.All(ctx, &invoices)
+}
+
+func (r *mongoRepository) UpdateInvoice(id string, data Invoice) (*Invoice, error) {
+	collection := r.database.Collection("invoices")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+
+	defer cancel()
+	_, err := collection.ReplaceOne(ctx, bson.M{"_id": id}, data)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return r.GetInvoice(id)
 }

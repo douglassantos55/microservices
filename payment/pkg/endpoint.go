@@ -28,6 +28,7 @@ type Set struct {
 
 	CreateInvoice endpoint.Endpoint
 	ListInvoices  endpoint.Endpoint
+	UpdateInvoice endpoint.Endpoint
 }
 
 func CreateEndpoints(svc Service) Set {
@@ -53,6 +54,7 @@ func CreateEndpoints(svc Service) Set {
 
 		CreateInvoice: makeCreateInvoiceEndpoint(svc),
 		ListInvoices:  makeListInvoicesEndpoint(svc),
+		UpdateInvoice: makeUpdateInvoiceEndpoint(svc),
 	}
 }
 
@@ -190,4 +192,16 @@ type ListResult struct {
 	Items      []any `json:"items"`
 	TotalItems int64 `json:"total_items"`
 	TotalPages int64 `json:"total_pages"`
+}
+
+func makeUpdateInvoiceEndpoint(svc Service) endpoint.Endpoint {
+	return func(ctx context.Context, r any) (any, error) {
+		req := r.(UpdateInvoiceRequest)
+		return svc.UpdateInvoice(req.ID, req.Data)
+	}
+}
+
+type UpdateInvoiceRequest struct {
+	ID   string  `json:"id"`
+	Data Invoice `json:"data"`
 }
