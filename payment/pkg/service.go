@@ -28,6 +28,7 @@ type Condition struct {
 type Invoice struct {
 	ID         string    `json:"id" bson:"_id,omitempty"`
 	CustomerID string    `json:"customer_id" validate:"required"`
+	Customer   *Customer `json:"customer,omitempty"`
 	DueDate    time.Time `json:"due_date" validate:"required,gt"`
 	Total      float64   `json:"total" validate:"required,gt=0"`
 	Items      []Item    `json:"items" validate:"required,dive"`
@@ -36,6 +37,16 @@ type Invoice struct {
 type Item struct {
 	Description string  `json:"description" validate:"required"`
 	Total       float64 `json:"total" validate:"required,gt=0"`
+}
+
+type Customer struct {
+	ID        string `json:"id"`
+	Name      string `json:"name"`
+	Email     string `json:"email"`
+	CpfCnpj   string `json:"cpf_cnpj"`
+	RgInscEst string `json:"rg_insc_est"`
+	Phone     string `json:"phone"`
+	Cellphone string `json:"cellphone"`
 }
 
 type Service interface {
