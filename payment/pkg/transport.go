@@ -380,6 +380,13 @@ func makeInvoiceRoutes(prefix string, router *httprouter.Router, endpoints Set, 
 		encodeDeleteResponse,
 		options,
 	))
+
+	router.Handler(http.MethodGet, prefix+"/:id", httptransport.NewServer(
+		endpoints.GetInvoice,
+		GetRouteParamDecoder("id"),
+		httptransport.EncodeJSONResponse,
+		options,
+	))
 }
 
 func decodeCreateInvoiceRequest(ctx context.Context, r *http.Request) (any, error) {

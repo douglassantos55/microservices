@@ -61,6 +61,7 @@ type Service interface {
 	ListInvoices(page, perPage int64) ([]*Invoice, int64, error)
 	UpdateInvoice(string, Invoice) (*Invoice, error)
 	DeleteInvoice(string) error
+	GetInvoice(string) (*Invoice, error)
 }
 
 type service struct {
@@ -332,4 +333,16 @@ func (s *service) DeleteInvoice(id string) error {
 		)
 	}
 	return s.repository.DeleteInvoice(id)
+}
+
+func (s *service) GetInvoice(id string) (*Invoice, error) {
+	invoice, err := s.repository.GetInvoice(id)
+	if err != nil {
+		return nil, NewError(
+			http.StatusNotFound,
+			"invoice not found",
+			"could not find invoice",
+		)
+	}
+	return invoice, nil
 }

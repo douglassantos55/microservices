@@ -273,3 +273,15 @@ func (l *loggingService) DeleteInvoice(id string) (err error) {
 	}()
 	return l.next.DeleteInvoice(id)
 }
+
+func (l *loggingService) GetInvoice(id string) (invoice *Invoice, err error) {
+	defer func() {
+		l.logger.Log(
+			"method", "GetInvoice",
+			"id", id,
+			"invoice", invoice,
+			"err", err,
+		)
+	}()
+	return l.next.GetInvoice(id)
+}

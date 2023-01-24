@@ -30,6 +30,7 @@ type Set struct {
 	ListInvoices  endpoint.Endpoint
 	UpdateInvoice endpoint.Endpoint
 	DeleteInvoice endpoint.Endpoint
+	GetInvoice    endpoint.Endpoint
 }
 
 func CreateEndpoints(svc Service) Set {
@@ -57,6 +58,7 @@ func CreateEndpoints(svc Service) Set {
 		ListInvoices:  makeListInvoicesEndpoint(svc),
 		UpdateInvoice: makeUpdateInvoiceEndpoint(svc),
 		DeleteInvoice: makeDeleteInvoiceEndpoint(svc),
+		GetInvoice:    makeGetInvoiceEndpoint(svc),
 	}
 }
 
@@ -211,5 +213,11 @@ type UpdateInvoiceRequest struct {
 func makeDeleteInvoiceEndpoint(svc Service) endpoint.Endpoint {
 	return func(ctx context.Context, r any) (any, error) {
 		return nil, svc.DeleteInvoice(r.(string))
+	}
+}
+
+func makeGetInvoiceEndpoint(svc Service) endpoint.Endpoint {
+	return func(ctx context.Context, r any) (any, error) {
+		return svc.GetInvoice(r.(string))
 	}
 }
