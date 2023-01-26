@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/go-kit/log"
 	"github.com/streadway/amqp"
 	"google.golang.org/grpc"
 	"reconcip.com.br/microservices/renting/pkg"
@@ -75,6 +76,12 @@ func main() {
 	)
 
 	svc := pkg.NewService(validator, repository, delivery, inventory)
+
+	logger := log.NewJSONLogger(log.NewSyncWriter(os.Stderr))
+	logger = log.WithPrefix(logger, "ts", log.DefaultTimestamp)
+	logger = log.WithPrefix(logger, "caller", log.DefaultCaller)
+
+	svc = pkg.NewLoggingService(svc, logger)
 
 	endpoints := pkg.CreateEndpoints(svc)
 	endpoints = pkg.WithEquipmentEndpoints(ic, endpoints)
