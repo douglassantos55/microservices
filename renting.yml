@@ -20,6 +20,9 @@ spec:
         imagePullPolicy: Never
         ports:
         - containerPort: 80
+          name: http
+        - containerPort: 8080
+          name: metrics
         env:
         - name: AUTH_SERVICE_URL
           value: auth-service
@@ -56,7 +59,14 @@ spec:
     app: renting
   ports:
     - protocol: TCP
+      name: http
       port: 80
       targetPort: 80
       nodePort: 30600
+    - protocol: TCP
+      name: metrics
+      port: 8080
+      targetPort: 8080
+      nodePort: 30680
+
 

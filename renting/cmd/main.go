@@ -5,7 +5,10 @@ import (
 	"net/http"
 	"os"
 
+	kitprometheus "github.com/go-kit/kit/metrics/prometheus"
 	"github.com/go-kit/log"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/streadway/amqp"
 	"google.golang.org/grpc"
 	"reconcip.com.br/microservices/renting/pkg"
@@ -83,12 +86,27 @@ func main() {
 
 	svc = pkg.NewLoggingService(svc, logger)
 
+	reqCounter := kitprometheus.NewCounterFrom(prometheus.CounterOpts{
+		Name: "http_requests_total",
+	}, []string{"method", "error"})
+
+	reqHistogram := kitprometheus.NewHistogramFrom(prometheus.HistogramOpts{
+		Name: "http_requests_latency",
+	}, []string{"method"})
+
+	svc = pkg.NewInstrumentingService(svc, reqCounter, reqHistogram)
+
 	endpoints := pkg.CreateEndpoints(svc)
 	endpoints = pkg.WithEquipmentEndpoints(ic, endpoints)
 	endpoints = pkg.WithPaymentMethodEndpoints(pc, endpoints)
 	endpoints = pkg.WithPaymentTypeEndpoints(pc, endpoints)
 	endpoints = pkg.WithPaymentConditionEndpoints(pc, endpoints)
 	endpoints = pkg.WithCustomerEndpoints(cc, endpoints)
+
+	go func() {
+		http.Handle("/metrics", promhttp.Handler())
+		http.ListenAndServe(":8080", nil)
+	}()
 
 	http.ListenAndServe(":80", pkg.NewHTTPServer(endpoints))
 }
