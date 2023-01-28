@@ -31,7 +31,10 @@ func main() {
 	validator := pkg.NewValidator([]pkg.ValidationRule{
 		pkg.NewPaymentTypeRule(repository),
 	})
-	svc := pkg.NewService(validator, repository)
+
+	gateway := pkg.NewStripeGateway("sk_test_4eC39HqLyjWDarjtT1zdp7dc")
+
+	svc := pkg.NewService(validator, repository, gateway)
 	svc = pkg.NewLoggingService(svc, logger)
 
 	endpoints := pkg.CreateEndpoints(svc)

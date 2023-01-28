@@ -78,10 +78,11 @@ type Service interface {
 type service struct {
 	validator  Validator
 	repository Repository
+	gateway    Gateway
 }
 
-func NewService(validator Validator, repository Repository) Service {
-	return &service{validator, repository}
+func NewService(validator Validator, repository Repository, gateway Gateway) Service {
+	return &service{validator, repository, gateway}
 }
 
 func (s *service) CreatePaymentMethod(data Method) (*Method, error) {
@@ -305,6 +306,10 @@ func (s *service) CreateInvoice(data Invoice) (*Invoice, error) {
 			"could not create invoice",
 			"there was an error while creating invoice",
 		)
+	}
+
+	if err := s.gateway.ProcessPayment(invoice); err != nil {
+		return nil, err
 	}
 
 	return invoice, nil
